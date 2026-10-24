@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>E-Commerce Footwear Sales Analytics — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f2f7f8;
+    --card: #ffffff;
+    --ink: #0a252d;         /* Deep Teal Navy */
+    --muted: #546a72;
+    --accent: #1e8a93;      /* Dashboard Teal */
+    --accent2: #f27a54;     /* Coral Orange Highlight */
+    --border: #cee0e2;
+    --bar-color: #1e8a93;   /* Teal Bar Fill */
+    --highlight: #e6f0f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 64px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,0.02);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(30,138,147,0.15);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.1;
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  header h1 em { font-style: italic; color: var(--accent2); }
+  
+  /* LIVE DEMO BUTTON */
+  .btn-demo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .btn-demo:hover {
+    background: #145e64;
+    transform: translateY(-2px);
+  }
+
+  .header-meta {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    color: rgba(242,247,248,0.6);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .header-meta span strong { color: var(--bg); display: block; font-size: 15px; }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
+  /* TEXT BLOCKS */
+  .text-block { color: var(--muted); line-height: 1.8; margin-bottom: 40px; max-width: 850px; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .kpi.coral::before {
+    background: var(--accent2);
+  }
+  .kpi-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .kpi-change { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 8px; background: var(--highlight); color: var(--accent); }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+  /* BAR CHART */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-row .label { width: 85px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-row .bar-wrap { flex: 1; background: var(--border); border-radius: 2px; height: 28px; overflow: hidden; position: relative; }
+  .bar-row .bar-fill { height: 100%; border-radius: 2px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; transition: width 1s ease; background: var(--bar-color); }
+  .bar-row.coral-fill .bar-fill { background: var(--accent2); }
+  .bar-row .bar-val { width: 65px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+  /* INSIGHT BOXES */
+  .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 20px 24px;
+  }
+  .insight.coral-edge { border-left-color: var(--accent2); }
+  .insight-icon { font-size: 24px; margin-bottom: 10px; }
+  .insight h4 { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 48px; }
+  footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">E-Commerce Retail Performance Operations</div>
+  <h2>Premium Footwear Sales Portfolio<br/><em>Inventory Revenue & Review</em></h2>
+  
+  <a href="https://drive.google.com/file/d/1IGj1SC-DI_QNRmfA459kampHgFrgLwsM/view?usp=sharing" target="_blank" class="btn-demo">
+    ▶ Live Demo
+  </a>
+
+  <div class="header-meta">
+    <span><strong>Product ID: AQ0114-101</strong>Active Inventory SKU</span>
+    <span><strong>Size 10.0 Core</strong>Top Selling Segment</span>
+    <span><strong>4.80 Avg Rating</strong>Customer Feedback</span>
+    <span><strong>6.00 Avg Review Count</strong>Response Rate</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label">Section 01</div>
+  <div class="section-title">Overview</div>
+  <p class="text-block">
+    This project introduces a sleek, focused retail sales analysis system built to track item-level performance metrics for premium footwear inventories. The dashboard breaks down active listings, pricing gaps, customer feedback loops, and volume numbers for individual product styles. This allows stock managers to track item metrics down to specific colorways and sizing availability rules.
+  </p>
+
+  <div class="section-label">Section 02</div>
+  <div class="section-title">Business Problem</div>
+  <p class="text-block">
+    In retail, managing high-ticket release products can be tricky. Sizing demands and pricing differences often cause stock issues. Without item-level tracking, managers struggle to see if listing prices match actual final sales, whether customer satisfaction is dropping on high-volume sizes, or which specific product options are stuck in storage instead of driving retail revenue.
+  </p>
+
+  <div class="section-label">Section 03</div>
+  <div class="section-title">Methodology</div>
+  <p class="text-block">
+    The retail dashboard architecture followed three simple steps:<br/>
+    • <strong>Data Extraction & SKU Mapping:</strong> Loaded raw product transaction databases into the data model. Organized rows by unique item codes (SKUs) and size variables to allow targeted product audits.<br/>
+    • <strong>Dropdown Drilldown Design:</strong> Created a smooth filter flow so picking a single shoe option instantly switches out the product image, descriptive block, and item-level revenue cards across the board.<br/>
+    • <strong>Simple Performance Formulas:</strong> <br/>
+    &nbsp;&nbsp;- Sizing Sales Volume is calculated as: The total aggregate count of units sold within a distinct size partition.<br/>
+    &nbsp;&nbsp;- Listing Pricing Variance is calculated as: The stated listing price minus the final retail transaction price to track profit margin drops.
+  </p>
+
+  <div class="section-label">Section 04</div>
+  <div class="section-title">Key Insights</div>
+  <div class="insights">
+    <div class="insight coral-edge">
+      <div class="insight-icon">👟</div>
+      <h4>Stark Sizing Demand</h4>
+      <p>Size 10.0 emerged as the single highest volume driver across monitored footwear items, recording a massive volume spike compared to other sizes in the stock pool.</p>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">🎯</div>
+      <h4>Price Alignment Maintained</h4>
+      <p>The system shows a perfect match between the listed price and final sale price ($19,995), proving that high-demand products successfully maintained their value without requiring discount incentives.</p>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">⭐</div>
+      <h4>Excellent Sentiment Scores</h4>
+      <p>The premium lifestyle collection held a strong 4.80 out of 5 satisfaction rating from buyers, backed by a stable feedback flow of 6 reviews per monitored item segment.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 05</div>
+  <div class="section-title">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Listing Price</div>
+      <div class="kpi-value">$19,995</div>
+      <div class="kpi-sub">MSRP tag pricing baseline</div>
+      <span class="kpi-change">Standard Full Retail</span>
+    </div>
+    <div class="kpi coral">
+      <div class="kpi-label">Sale Price</div>
+      <div class="kpi-value">$19,995</div>
+      <div class="kpi-sub">Actual customer checkout cost</div>
+      <span class="kpi-change" style="color: var(--accent2);">0% Discount Leakage</span>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Average Rating</div>
+      <div class="kpi-value">4.80 / 5</div>
+      <div class="kpi-sub">Customer satisfaction score</div>
+      <span class="kpi-change">Top Tier Sentiment</span>
+    </div>
+    <div class="kpi coral">
+      <div class="kpi-label">Units Sold (Current Item)</div>
+      <div class="kpi-value">1</div>
+      <div class="kpi-sub">Active track inventory slice</div>
+      <span class="kpi-change" style="color: var(--accent2);">Size 10.0 Active</span>
+    </div>
+  </div>
+
+  <div class="section-label">Section 06</div>
+  <div class="section-title">Visualization Highlights</div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Top Sizing Demand Structure (Sales)</h3>
+      <div class="bar-row coral-fill">
+        <div class="label">Size 10.0</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%;">664.8K Volume</div></div>
+        <div class="bar-val">664.8K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Size 9.0</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:0%;">0 Volume</div></div>
+        <div class="bar-val">0</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Size 11.0</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:0%;">0 Volume</div></div>
+        <div class="bar-val">0</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">The charts clearly isolate size 10.0 as the dominant consumer sizing choice within the regional sales records.</p>
+    </div>
+
+    <div class="card">
+      <h3>Revenue by Filtered Shoe Profiles</h3>
+      <div class="bar-row">
+        <div class="label">Icon Style</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%;">19,995 Value</div></div>
+        <div class="bar-val">$19.99K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Style B</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:0%;">0 Value</div></div>
+        <div class="bar-val">$0</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Style C</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:0%;">0 Value</div></div>
+        <div class="bar-val">$0</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">By focusing directly on the filtered layout, the bar charts show exactly how individual premium styles generate returns.</p>
+    </div>
+  </div>
+
+  <div class="section-label">Section 07</div>
+  <div class="section-title">Conclusion</div>
+  <p class="text-block">
+    In conclusion, setting up an interactive item-level dashboard gives stock managers complete control over product launches. Tracking size distributions proves that inventory choices must remain heavily skewed toward core sizes like 10.0 to match real-world demand patterns. Moving forward, this clean, plain layout model can be rolled out across wider inventory categories to maintain zero price discounting and optimize general supply pipelines.
+  </p>
+
+</main>
+
+<footer>
+  <p>Prepared by <strong>Rashid Tobrazune</strong> · Footwear Analytics Case Profile · 2026 &nbsp;|&nbsp;
+  <a href="otherprojects.html" target="_blank">View Full Portfolio →</a></p>
+</footer>
+
+</body>
+</html>

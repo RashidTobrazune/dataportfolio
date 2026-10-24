@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Education & Non-Profit Impact Dashboard — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f3f7f8;
+    --card: #ffffff;
+    --ink: #0d2830;         /* Dark Teal Navy */
+    --muted: #556b73;
+    --accent: #208b93;      /* Dashboard Teal */
+    --accent2: #146c74;     /* Darker Teal */
+    --accent3: #cca43b;     /* Gold Accent */
+    --border: #d0dedf;
+    --grad: #208b93;
+    --risk: #d9534f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 64px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,0.02);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(32,139,147,0.15);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.1;
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  header h1 em { font-style: italic; color: #a5e5e3; }
+  
+  /* LIVE DEMO BUTTON */
+  .btn-demo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .btn-demo:hover {
+    background: var(--accent2);
+    transform: translateY(-2px);
+  }
+
+  .header-meta {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    color: rgba(243,247,248,0.6);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .header-meta span strong { color: var(--bg); display: block; font-size: 15px; }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
+  /* TEXT BLOCKS */
+  .text-block { color: var(--muted); line-height: 1.8; margin-bottom: 40px; max-width: 850px; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi.teal::before { background: var(--accent); }
+  .kpi.gold::before { background: var(--accent3); }
+  .kpi.red::before { background: var(--risk); }
+  .kpi-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .kpi-change { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 8px; }
+  .kpi-change.good { background: #e8f5ec; color: #2d7a47; }
+  .kpi-change.bad { background: #fdecea; color: #c0392b; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+  /* BAR CHART */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-row .label { width: 65px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .bar-row .bar-wrap { flex: 1; background: var(--border); border-radius: 2px; height: 28px; overflow: hidden; position: relative; }
+  .bar-row .bar-fill { height: 100%; border-radius: 2px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; transition: width 1s ease; }
+  .bar-row .bar-val { width: 65px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+  /* COMPARISON TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+  .comp-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .num { font-family: 'DM Serif Display', serif; font-size: 16px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag.high { background: #e8f5ec; color: #2d7a47; }
+  .tag.mid { background: #e6f4f8; color: #1f77b4; }
+
+  /* INSIGHT BOXES */
+  .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 20px 24px;
+  }
+  .insight.green { border-left-color: #2ca02c; }
+  .insight.gold { border-left-color: var(--accent3); }
+  .insight-icon { font-size: 24px; margin-bottom: 10px; }
+  .insight h4 { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 48px; }
+  footer a { color: var(--accent); text-decoration: none; }
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Education & Non-Profit Performance Operations</div>
+  <h2>Education and Non-Profit<br/><em>Impact & Performance</em></h2>
+  
+  <a href="https://drive.google.com/file/d/1tLpYfjAVBTDFLBE-Jiwr_59_ZSWecNa0/view?usp=sharing" target="_blank" class="btn-demo">
+    ▶ Live Demo
+  </a>
+
+  <div class="header-meta">
+    <span><strong>20 Programs</strong>Active Course Tracks</span>
+    <span><strong>500 Students</strong>Total Enrolled Base</span>
+    <span><strong>$778K Raised</strong>Gross Donor Funding</span>
+    <span><strong>72% Graduation</strong>Overall Success Rate</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label">Section 01</div>
+  <div class="section-title">Overview</div>
+  <p class="text-block">
+    This project is an interactive, multi-page dashboard built to track student success, student retention, and donation metrics for an educational non-profit organization. The system connects enrollment numbers, graduation data, test pass rates, and fundraising campaigns. This gives managers a clear view of how different school departments are performing alongside the organization's financial health.
+  </p>
+
+  <div class="section-label">Section 02</div>
+  <div class="section-title">Business Problem</div>
+  <p class="text-block">
+    Before this dashboard was built, tracking school performance and donation campaigns was frustrating. Student grades and graduation rates were kept in separate files from fundraising records. Because these files were disconnected, managers could not easily see which departments needed extra academic support, how many students stayed enrolled semester-over-semester, or why total donations dropped slightly by 3.65% between years.
+  </p>
+
+  <div class="section-label">Section 03</div>
+  <div class="section-title">Methodology</div>
+  <p class="text-block">
+    The project was built using three simple steps:<br/>
+    • <strong>Data Cleaning & Transformation:</strong> Merged raw student academic records with non-profit donation databases. Used Power Query to fix formatting errors, remove empty fields, and separate student levels cleanly into undergraduate and graduate groups.<br/>
+    • <strong>Cross-Filtering Setup:</strong> Connected the data models so filters for specific years, quarters, and departments update all charts across academic performance and fundraising at the same time.<br/>
+    • <strong>Simple Calculations:</strong> <br/>
+    &nbsp;&nbsp;- The Graduation Rate is calculated as: Total Graduates divided by Total Enrolled Students within that cohort, multiplied by 100.<br/>
+    &nbsp;&nbsp;- The Student Retention Rate is calculated as: Total Retained Students divided by Total Prior Cohort Students, multiplied by 100.
+  </p>
+
+  <div class="section-label">Section 04</div>
+  <div class="section-title">Key Insights</div>
+  <div class="insights">
+    <div class="insight green">
+      <div class="insight-icon">🎓</div>
+      <h4>High Pass Rates in Business</h4>
+      <p>The Business department led the school with an 83.5% certification pass rate, even though the Arts department held the highest overall student grade point average at 83.0%.</p>
+    </div>
+    <div class="insight gold">
+      <div class="insight-icon">💰</div>
+      <h4>Event Channel Drives Donations</h4>
+      <p>Fundraising events proved to be the most powerful donor channel, bringing in 34.39% ($268K) of total funding, followed closely by website donations at 31.15% ($242K).</p>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">📉</div>
+      <h4>Minor Drop in Funding</h4>
+      <p>Total fundraising experienced a small drop of 3.65% compared to the previous year. The charts pinpoint this drop to lower engagement in later campaign waves, showing exactly where to adjust next year.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 05</div>
+  <div class="section-title">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi teal">
+      <div class="kpi-label">Total Enrollment</div>
+      <div class="kpi-value">500</div>
+      <div class="kpi-sub">301 Undergrad / 199 Graduate</div>
+      <span class="kpi-change good">Active across 10 Cohorts</span>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-label">Graduation Rate</div>
+      <div class="kpi-value">72.0%</div>
+      <div class="kpi-sub">200 Total Graduates tracked</div>
+      <span class="kpi-change good">59.5% Are Graduate Level</span>
+    </div>
+    <div class="kpi gold">
+      <div class="kpi-label">Total Funds Raised</div>
+      <div class="kpi-value">$778K</div>
+      <div class="kpi-sub">$373K Pledged / $405K Unpledged</div>
+      <span class="kpi-change bad">▼ -3.65% Growth vs Last Year</span>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Retention Volume</div>
+      <div class="kpi-value">9.91K</div>
+      <div class="kpi-sub">Total historic student retention layers</div>
+      <span class="kpi-change good">Avg Community Impact: 72.4%</span>
+    </div>
+  </div>
+
+  <div class="section-label">Section 06</div>
+  <div class="section-title">Visualization Highlights</div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Active Student Headcount by Department</h3>
+      <div class="bar-row">
+        <div class="label">STEM</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%; background: linear-gradient(90deg, #208b93, #146c74);">196 Students</div></div>
+        <div class="bar-val">196</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Health</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:56%; background: linear-gradient(90deg, #208b93, #146c74);">111 Students</div></div>
+        <div class="bar-val">111</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Arts</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:53%; background: linear-gradient(90deg, #208b93, #146c74);">104 Students</div></div>
+        <div class="bar-val">104</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Business</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:45%; background: linear-gradient(90deg, #208b93, #146c74);">89 Students</div></div>
+        <div class="bar-val">89</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">The charts show that the STEM division forms the biggest academic block, accounting for 39.2% of all active student profiles.</p>
+    </div>
+
+    <div class="card">
+      <h3>Fundraising Performance by Campaign Group</h3>
+      <div class="bar-row">
+        <div class="label">Camp 10</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%; background: #cca43b;">$112K Raised</div></div>
+        <div class="bar-val">$112K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Camp 9</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:85%; background: #cca43b;">$96K Raised</div></div>
+        <div class="bar-val">$96K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Camp 5</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:79%; background: #cca43b;">$89K Raised</div></div>
+        <div class="bar-val">$89K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Camp 1</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:73%; background: #cca43b;">$82K Raised</div></div>
+        <div class="bar-val">$82K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Camp 6</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:72%; background: #cca43b;">$81K Raised</div></div>
+        <div class="bar-val">$81K</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">Campaign 10 and Campaign 9 were the most successful funding runs, contributing more than a quarter of all incoming capital.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:48px; overflow-x:auto;">
+    <h3 style="font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px;">Department Operational Summary Matrix</h3>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Department Name</th>
+          <th>Total Students</th>
+          <th>Graduates Tracked</th>
+          <th>Avg Certification Pass Rate</th>
+          <th>Community Impact Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>STEM Infrastructure</td><td class="num">196</td><td class="num">77</td><td>75.2%</td>
+          <td><span class="tag high">High (73.25%)</span></td>
+        </tr>
+        <tr>
+          <td>Health Tiers</td><td class="num">111</td><td class="num">48</td><td>64.3%</td>
+          <td><span class="tag high">High (73.77%)</span></td>
+        </tr>
+        <tr>
+          <td>Business Operations</td><td class="num">89</td><td class="num">42</td><td>83.5%</td>
+          <td><span class="tag mid">Good (71.80%)</span></td>
+        </tr>
+        <tr>
+          <td>Arts & Humanities</td><td class="num">104</td><td class="num">33</td><td>81.3%</td>
+          <td><span class="tag mid">Good (69.77%)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Section 07</div>
+  <div class="section-title">Conclusion</div>
+  <p class="text-block">
+    In summary, combining educational data with donation tracking inside one dashboard gives managers complete clarity over operations. While student academic metrics and certification pass rates look great across departments like Business and Arts, fundraising requires minor adjustments to reverse the 3.65% yearly drop. Future campaigns can shift focus from lower-performing channels toward highly interactive live events and website donation flows.
+  </p>
+
+</main>
+
+<footer>
+  <p>Prepared by <strong>Rashid Tobrazune</strong> · Education & Non-Profit Dashboard Project · 2026 &nbsp;|&nbsp;
+  <a href="otherprojects.html" target="_blank">View Full Portfolio →</a></p>
+</footer>
+
+</body>
+</html>

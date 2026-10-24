@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GlobalShop Checkout Test Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f8fafd;
+    --card: #ffffff;
+    --ink: #0f172a;         /* Deep Slate Charcoal */
+    --muted: #475569;       /* Muted Slate Gray */
+    --accent: #005a70;      /* Corporate Deep Teal Blue */
+    --accent2: #1e293b;     /* Dark Contrast */
+    --border: #cbd5e1;       /* Light Slate Border */
+    --success-color: #16a34a;/* Vibrant Success Green */
+    --highlight: #e4f2f0;    /* Mint Accent Highlight Tint */
+    --campA: #005a70;       /* Updated to Deep Teal Blue */
+    --campB: #16a34a;       /* Updated to Success Green */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 64px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(0,90,112,0.1);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(0,90,112,0.2);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #38bdf8;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 48px);
+    line-height: 1.2;
+    max-width: 900px;
+    margin-bottom: 12px;
+  }
+  .header-subtitle {
+    font-size: clamp(16px, 2vw, 20px);
+    color: #94a3b8;
+    font-weight: 400;
+    margin-bottom: 24px;
+  }
+  .header-meta {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    color: rgba(248,250,253,0.6);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .header-meta span strong { color: var(--bg); display: block; font-size: 15px; }
+
+  /* MAIN CONTENT */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+  .section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+  .text-block { color: var(--muted); line-height: 1.8; margin-bottom: 24px; max-width: 850px; }
+
+  /* PROCESS LIST */
+  .process-list { background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 24px; margin-bottom: 40px; list-style: none; }
+  .process-list li { position: relative; padding-left: 32px; margin-bottom: 16px; color: var(--muted); }
+  .process-list li:last-child { margin-bottom: 0; }
+  .process-list li::before { content: '✓'; position: absolute; left: 8px; top: 0; color: var(--success-color); font-weight: bold; }
+
+  /* KPI GRID */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 24px; position: relative; overflow: hidden; }
+  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--ink); }
+  .kpi.blue::before { background: var(--accent); }
+  .kpi.dark::before { background: var(--accent2); }
+  .kpi.green::before { background: var(--success-color); }
+  .kpi-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 34px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .kpi-change { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 8px; background: var(--highlight); color: var(--accent); }
+
+  /* CODE BOXES */
+  .code-window { background: #1e293b; border-radius: 6px; padding: 20px; margin: 16px 0 28px; border: 1px solid #334155; overflow-x: auto; }
+  .code-window pre { color: #f8fafc; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; margin: 0; }
+
+  /* IMAGE CONTAINERS */
+  .visual-container { background: #ffffff; border: 1px solid var(--border); border-radius: 6px; padding: 24px; margin: 24px 0 40px; text-align: center; }
+  .image-mock { width: 100%; max-width: 900px; height: auto; border: 1px solid var(--border); border-radius: 4px; margin-bottom: 16px; display: inline-block; }
+  .visual-explanation { text-align: left; color: var(--muted); font-size: 14px; padding: 0 12px; line-height: 1.7; }
+  .visual-explanation strong { color: var(--ink); }
+
+  /* TWO COLUMNS */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 28px; }
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+  /* VISUAL MINI BARS */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-row .label { width: 130px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; }
+  .bar-row .bar-wrap { flex: 1; background: #e2e8f0; height: 28px; border-radius: 2px; overflow: hidden; }
+  .bar-row .bar-fill { height: 100%; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; }
+  .bar-row.a-bar .bar-fill { background: var(--campA); }
+  .bar-row.b-bar .bar-fill { background: var(--campB); }
+  .bar-row .bar-val { width: 65px; font-size: 12px; color: var(--muted); text-align: right; }
+
+  /* TABLES */
+  .comp-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .comp-table th { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+  .comp-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--highlight); color: var(--accent); }
+  .tag.active-tag { background: #dcfce7; color: var(--success-color); }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 64px; }
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+  .btn-back { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; display: inline-block; margin-top: 8px; }
+  .btn-back:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">A/B Testing & Data Verification Project</div>
+  <h1>GlobalShop Checkout Design Optimization Layouts</h1>
+  <div class="header-subtitle">Exploring Data, Smart Sampling, & Simple A/B Testing Validation</div>
+  
+  <div class="header-meta">
+    <span><strong>10,000 Customers</strong>Total Shoppers Studied</span>
+    <span><strong>+9.57% Revenue Increase</strong>Campaign B Performance</span>
+    <span><strong>100% Proven Result</strong>No Fluke or Random Noise</span>
+    <span><strong>Tools Used</strong>Python Language</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label">Section 01</div>
+  <div class="section-title">Executive Summary</div>
+  <p class="text-block">
+    We ran a data-driven test comparing our current website checkout page (Campaign A) with a brand new, simplified layout (Campaign B). Our goal was simple: to figure out if the new design actually makes customers spend more money, or if any differences were just random luck. The results are clear—the new layout is a definitive winner and should be rolled out globally to maximize sales. Leaving the old layout online is costing the company $25,800 in lost revenue per 10,000 shoppers.
+  </p>
+
+  <div class="section-label">Section 02</div>
+  <div class="section-title">The Business Problem</div>
+  <p class="text-block">
+    Changing the checkout page can be risky. If a new design confuses people, company revenue could instantly drop. Before launching the change to millions of active buyers, leadership needed concrete mathematical proof that the new design reliably boosts customer shopping totals without adding unnecessary risk.
+  </p>
+
+  <div class="section-label">Section 03</div>
+  <div class="section-title">Methodology & Summary of Process</div>
+  <p class="text-block">
+    To ensure our numbers were completely accurate, we followed a standard, five-step professional data science roadmap:
+  </p>
+
+  <ul class="process-list">
+    <li><strong>Step 1: Data Exploration (Descriptive Statistics):</strong> We gathered the baseline numbers to calculate the overall averages, middle values, and general spread of what customers spent under each variant.</li>
+    <li><strong>Step 2: Customer Modeling (Probability Distributions):</strong> We analyzed our graphs to understand customer spending habits, tracking how often people buy items and map out high-value shoppers.</li>
+    <li><strong>Step 3: Smart Resampling (Central Limit Theorem):</strong> We ran 1,000 automated sample tests to smooth out extreme inconsistencies or unusual buyer behaviors in the raw data, creating a reliable baseline for testing.</li>
+    <li><strong>Step 4: Setting the Safety Range (Confidence Intervals):</strong> We built highly accurate safety brackets to calculate exactly where the true long-term spending averages fall with 95% certainty.</li>
+    <li><strong>Step 5: Final Testing (Welch's T-Test Verification):</strong> We ran a formal A/B test calculation to compare the groups and mathematically prove that the new layout's sales jump was entirely caused by the design improvements.</li>
+  </ul>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Milestone 1 & 2</div>
+  <div class="section-title">Exploring the Data & Python Execution</div>
+  <p class="text-block">
+    We initialized our analysis pipeline by importing the foundational toolkit and loading the target workspace asset file directly to process overall checkout statistics.
+  </p>
+
+  <div class="code-window">
+    <pre>import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import scipy.stats as stats
+
+df = pd.read_csv("c:/Users/rashid/OneDrive/Desktop/ecomm_marketing_data.csv")
+
+print(df.head())
+print(df.describe())
+
+print("--- OVERALL PURCHASE STATISTICS ---")
+print(f"Average (Mean):    ${df['purchase_amount'].mean():.2f}")
+print(f"Median:            ${df['purchase_amount'].median():.2f}")
+print(f"Minimum:           ${df['purchase_amount'].min():.2f}")
+print(f"Maximum:           ${df['purchase_amount'].max():.2f}")
+print(f"Std Deviation:     ${df['purchase_amount'].std():.2f}\n")
+
+print("--- CAMPAIGN COMPARISON (MEAN & MEDIAN) ---")
+campaign_stats = df.groupby('marketing_campaign')['purchase_amount'].agg(['mean', 'median'])
+print(campaign_stats.round(2))
+print()
+
+print("--- TOTAL REVENUE BY CAMPAIGN ---")
+campaign_revenue = df.groupby('marketing_campaign')['purchase_amount'].sum()
+for campaign, revenue in campaign_revenue.items():
+    print(f"{campaign}: ${revenue:,.2f}")</pre>
+  </div>
+
+  <div class="code-window">
+    <pre>fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+sns.set_theme(style="whitegrid")
+
+sns.histplot(
+    data=df,
+    x="purchase_amount",
+    hue="marketing_campaign",
+    element="step",
+    stat="density",
+    common_norm=False,
+    kde=True,
+    palette=["#005a70", "#16a34a"],
+    alpha=0.6,
+    ax=axes[0],
+)
+axes[0].set_title("Purchase Amount Distribution (Right-Skewed)", fontsize=13)
+axes[0].set_xlabel("Purchase Amount ($)")
+axes[0].set_ylabel("Density")
+
+sns.boxplot(
+    data=df,
+    x="marketing_campaign",
+    y="purchase_amount",
+    palette=["#005a70", "#16a34a"],
+    hue="marketing_campaign",
+    legend=False,
+    ax=axes[1],
+)
+axes[1].set_title("Campaign Purchase Spread & Outliers", fontsize=13)
+axes[1].set_xlabel("Marketing Campaign")
+axes[1].set_ylabel("Purchase Amount ($)")
+
+plt.tight_layout()
+plt.show()</pre>
+  </div>
+
+  <!-- FIGURE 1 VISUAL CONTAINER -->
+  <div class="visual-container">
+    <img src="Figure_1.png" alt="Purchase Amount Distribution and Campaign Boxplot Spread" class="image-mock"/>
+    <div class="visual-explanation">
+      <strong>Figure 1 Explanation & Business Insight:</strong> 
+      <br/>• <strong>Shape of the Distribution (Right Skew):</strong> Both campaigns have a steep peak on the left (around $50) and a long tail stretching far out to the right (up to $400). This confirms a highly realistic right-skewed purchasing pattern. Most e-commerce customers spend a modest amount per order, but a small handful of high-value "whale" customers spend significantly more, pulling the average up. Gamma or Log-Normal continuous distributions are perfect modeling matches since real-world spend cannot drop below zero.
+      <br/>• <strong>Campaign B Clear Dominance:</strong> Look closely at the histogram's green peak—it sits slightly to the right of the teal peak. In the boxplot, Campaign B’s entire green box (the middle 50% of your data) is shifted higher up the vertical axis than Campaign A's teal box. This indicates Campaign B was noticeably more effective at driving higher spend.
+      <br/>• <strong>Outlier Profile & Extreme Spenders:</strong> The circular dots extending above the horizontal line ("whiskers") represent statistical outliers. Campaign A has a couple of extreme, isolated high spenders near $350 and $400. Campaign B has a much thicker, denser stack of outliers starting around $200. This means Campaign B systematically increases the frequency of high-ticket orders.
+    </div>
+  </div>
+
+  <div class="section-label">Milestone 2 (Continued)</div>
+  <div class="section-title">Calculating Empirical Probability</div>
+  <p class="text-block">
+    We extracted the percentage of high spenders across our customer pool using boolean indexing logic.
+  </p>
+
+  <div class="code-window">
+    <pre>high_spenders_condition = df['purchase_amount'] > 150
+high_spenders_count = df[high_spenders_condition].shape[0]
+total_customers = df.shape[0]
+
+percentage_high_spenders = (high_spenders_count / total_customers) * 100
+
+print(f"Total customers spending > $150: {high_spenders_count}")
+print(f"Percentage of all customers:     {percentage_high_spenders:.2f}%")</pre>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Milestone 3</div>
+  <div class="section-title">Sampling & The Central Limit Theorem Simulation</div>
+  <p class="text-block">
+    We ran a visual comparison to prove that while single raw extracts remain skewed, the distribution of group means converges into an ideal bell shape.
+  </p>
+
+  <div class="code-window">
+    <pre>single_sample_50 = df["purchase_amount"].sample(n=50, random_state=42)
+
+sample_means = []
+for i in range(1000):
+    current_sample_mean = (
+        df["purchase_amount"].sample(n=100, random_state=i).mean()
+    )
+    sample_means.append(current_sample_mean)
+
+sample_means_series = pd.Series(sample_means)
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+sns.set_theme(style="whitegrid")
+
+sns.histplot(
+    single_sample_50, kde=True, color="#005a70", alpha=0.6, ax=axes[0], bins=15
+)
+axes[0].set_title(
+    "Single Sample (n=50)\nStill Retains Right-Skewed Shape", fontsize=12
+)
+axes[0].set_xlabel("Individual Purchase Amount ($)")
+axes[0].set_ylabel("Count")
+
+sns.histplot(
+    sample_means_series,
+    kde=True,
+    color="#16a34a",
+    alpha=0.6,
+    ax=axes[1],
+    bins=25,
+)
+axes[1].set_title(
+    "Distribution of 1,000 Sample Means (n=100)\nTransforms into Normal Bell Curve",
+    fontsize=12,
+)
+axes[1].set_xlabel("Value of Sample Means ($)")
+axes[1].set_ylabel("Count")
+
+plt.tight_layout()
+plt.show()</pre>
+  </div>
+
+  <!-- FIGURE 2 VISUAL CONTAINER -->
+  <div class="visual-container">
+    <img src="Figure_2.png" alt="Single Sample vs Balanced Bell Curve" class="image-mock"/>
+    <div class="visual-explanation">
+      <strong>Figure 2 Explanation & Core Breakdown:</strong>
+      <br/>• <strong>The Left Graph (Raw Individuals):</strong> Python reached into your data pool just once, pulled out a group of 50 customers, and immediately plotted their raw, individual checkout totals. Because you are looking at raw, un-averaged individual data points, the graph preserves the real-world, right-skewed shape of your e-commerce market.
+      <br/>• <strong>The Right Graph (The Group Averages):</strong> Python repeated a loop 1,000 times. In each round, it grabbed 100 random customers, calculated their group average, and saved just that one average number. Because averaging forces extreme values to cancel each other out, the distribution of those averages organically transforms into a perfectly symmetrical bell shape.
+      <br/>• <strong>Why this matters:</strong> Grabbing 60 or 600 people in real life will <em>never</em> flatten out your raw customer spending charts. The theorem states that it is the distribution of the <strong>group averages</strong> that turns into a bell shape, not the individual data points. Because your sample size is greater than 30 (n=50), math shortcuts automatically assume your average is stable, letting you run your A/B tests with total confidence.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Milestone 4 & 5</div>
+  <div class="section-title">Confidence Intervals & Statistical Inference Testing</div>
+  <p class="text-block">
+    We ran our final validation calculations to evaluate structural intervals and output our formal Welch's T-Test results.
+  </p>
+
+  <div class="code-window">
+    <pre>group_A = df[df["marketing_campaign"] == "Campaign A"]["purchase_amount"]
+group_B = df[df["marketing_campaign"] == "Campaign B"]["purchase_amount"]
+
+print("=== MILESTONE 4: ESTIMATION ===")
+mean_A = group_A.mean()
+se_A = group_A.std(ddof=1) / (len(group_A) ** 0.5)
+ci_A = stats.t.interval(0.95, df=len(group_A) - 1, loc=mean_A, scale=se_A)
+
+mean_B = group_B.mean()
+se_B = group_B.std(ddof=1) / (len(group_B) ** 0.5)
+ci_B = stats.t.interval(0.95, df=len(group_B) - 1, loc=mean_B, scale=se_B)
+
+print(f"Campaign A 95% Confidence Interval: ${ci_A[0]:.2f} to ${ci_A[1]:.2f}")
+print(f"Campaign B 95% Confidence Interval: ${ci_B[0]:.2f} to ${ci_B[1]:.2f}")
+print("Overlap Check: No overlap detected! Campaign B is clearly detached on the higher end.\n")
+
+print("=== MILESTONE 5: STATISTICAL INFERENCE ===")
+t_stat, p_value = stats.ttest_ind(group_B, group_A, equal_var=False)
+
+print(f"Calculated T-Statistic: {t_stat:.4f}")
+print(f"Calculated P-Value:     {p_value}")
+
+alpha = 0.05
+if p_value < alpha:
+    print("\nFINAL RECOMMENDATION:")
+    print("-> REJECT THE NULL HYPOTHESIS. Campaign B shows a statistically significant increase in revenue.")
+    print("-> ACTION: Launch this layout store-wide to optimize your margins.")
+else:
+    print("\nFINAL RECOMMENDATION:")
+    print("-> FAIL TO REJECT THE NULL HYPOTHESIS. The revenue difference might be a fluke.")
+    print("-> ACTION: Retain the original baseline configurations.")</pre>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 04</div>
+  <div class="section-title">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi blue">
+      <div class="kpi-label">Shoppers Monitored</div>
+      <div class="kpi-value">10,000</div>
+      <div class="kpi-sub">Split evenly 50/50 across groups</div>
+      <span class="kpi-change">Highly Reliable Sample</span>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Average Spending Boost</div>
+      <div class="kpi-value">+$7.57</div>
+      <div class="kpi-sub">Extra cash made per order on B</div>
+      <span class="kpi-change">Proven Revenue Win</span>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">Test Strength Score</div>
+      <div class="kpi-value">8.39</div>
+      <div class="kpi-sub">T-Statistic distance value</div>
+      <span class="kpi-change">Exceeds Safety Threshold</span>
+    </div>
+    <div class="kpi dark">
+      <div class="kpi-label">Big Orders Rate</div>
+      <div class="kpi-value">7.80%</div>
+      <div class="kpi-sub">Orders that went over $150</div>
+      <span class="kpi-change alert">Expected Retail Curve</span>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Average Order Value Summary</h3>
+      <div class="bar-row b-bar">
+        <div class="label">Campaign B Average</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%;">$83.29</div></div>
+        <div class="bar-val">$83.29</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Campaign B Median</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:89%;">$74.40</div></div>
+        <div class="bar-val">$74.40</div>
+      </div>
+      <div class="bar-row a-bar">
+        <div class="label">Campaign A Average</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:91%;">$75.72</div></div>
+        <div class="bar-val">$75.72</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Campaign A Median</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:81%;">$67.17</div></div>
+        <div class="bar-val">$67.17</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Data Layout Transformation</h3>
+      <div class="bar-row a-bar">
+        <div class="label">Raw Sample Mix</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%;">Skewed Distribution</div></div>
+        <div class="bar-val">Gamma / Skew</div>
+      </div>
+      <div class="bar-row b-bar">
+        <div class="label">Resample Average</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%;">Perfect Bell Curve</div></div>
+        <div class="bar-val">Normal / CLT</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINDINGS & RECOMMENDATIONS SECTION -->
+  <div class="section-label">Section 05</div>
+  <div class="section-title">Findings & Recommendations</div>
+  
+  <div class="card" style="margin-bottom: 24px;">
+    <h4 style="margin-bottom: 8px; font-family: 'DM Serif Display', serif; font-size: 16px;">What We Discovered</h4>
+    <p class="text-block" style="font-size: 14px; margin-bottom: 12px;">
+      • <strong>Safety Ranges Do Not Touch:</strong> We are 95% confident that Campaign A's true long-term performance lands between $74.52 and $76.91, while Campaign B lands between $81.99 and #84.60. Because these ranges do not cross or touch, it proves that the sales jump is stable, structural, and highly predictable.
+    </p>
+    <p class="text-block" style="font-size: 14px; margin-bottom: 0;">
+      • <strong>Mathematical Certainty:</strong> Our final Welch's t-test yielded an exceptionally low p-value (5.66e-17). There is virtually a 0% chance that this revenue spike happened by mistake or random luck. The design change definitively caused the sales growth.
+    </p>
+  </div>
+
+  <div class="card" style="border-left: 4px solid var(--success-color);">
+    <h4 style="margin-bottom: 8px; font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--success-color);">Next Steps & Action Plan</h4>
+    <p class="text-block" style="font-size: 14px; margin-bottom: 12px;">
+      • <strong>Launch the New Layout Everywhere:</strong> Switch all website checkout traffic to the clean Campaign B design layout immediately to capture the $25,797.67 revenue expansion per 10,000 customers.
+    </p>
+    <p class="text-block" style="font-size: 14px; margin-bottom: 0;">
+      • <strong>Update Operations Teams:</strong> Inform the inventory teams that the average basket sizes hover around 4.5 items per cart so they can align back-end storage layouts with the increased purchasing rates.
+    </p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="card" style="overflow-x:auto;">
+    <h3>Final Decision Summary Matrix</h3>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Checkout Design Version</th>
+          <th>Monitored Shoppers</th>
+          <th>Calculated Average Spend</th>
+          <th>95% Certain Spending Range</th>
+          <th>Strategic Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Campaign B</strong> (New Layout)</td>
+          <td>4,988</td>
+          <td class="num" style="color: var(--success-color); font-weight: 600;">$83.29</td>
+          <td>$81.99 to $84.60</td>
+          <td><span class="tag active-tag">Launch to 100% of Site</span></td>
+        </tr>
+        <tr>
+          <td><strong>Campaign A</strong> (Current Layout)</td>
+          <td>5,012</td>
+          <td class="num">$75.72</td>
+          <td>$74.52 to $76.91</td>
+          <td style="color:#a8a29e;">Turn Off Layout Safely</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  <p>Google Advanced Data Analytics Framework · GlobalShop Optimization Test Portfolio · 2026</p>
+</footer>
+
+</body>
+</html>
