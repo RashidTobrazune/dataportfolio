@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Fleet Operations & Logistics Performance — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f7f6fb;          /* Soft lavender gray */
+    --card: #ffffff;
+    --ink: #1b162b;         /* Deep purple-charcoal */
+    --muted: #5e5972;
+    --accent: #5e3f94;      /* Fleet purple */
+    --accent-dark: #472c74;
+    --accent-soft: #ede7f8;
+    --amber: #c86914;       /* Alert amber / late trips */
+    --border: #dfdaee;
+    --green: #2d7a47;
+    --red: #c0392b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 64px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,0.03);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(200,105,20,0.18);
+  }
+  /* FIX: the decorative circles were sitting on top of the Live Demo button on phones and blocking taps */
+  header::before,
+  header::after { pointer-events: none; }
+  header > * { position: relative; z-index: 1; }
+
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #e4b584;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.1;
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  header h1 em { font-style: italic; color: #d1b8ff; }
+
+  /* LIVE DEMO BUTTON */
+  .btn-demo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .btn-demo:hover {
+    background: var(--accent-dark);
+    transform: translateY(-2px);
+  }
+
+  .header-meta {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    color: rgba(247,246,251,0.7);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+  }
+  .header-meta span strong { color: var(--bg); display: block; font-size: 15px; }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
+  /* TEXT BLOCKS */
+  .text-block { color: var(--muted); line-height: 1.8; margin-bottom: 40px; max-width: 850px; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .kpi.dark::before { background: var(--ink); }
+  .kpi.amber::before { background: var(--amber); }
+  .kpi.green::before { background: var(--green); }
+  .kpi.red::before { background: var(--red); }
+  .kpi-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 34px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .kpi-change { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 8px; background: var(--accent-soft); color: var(--accent); }
+  .kpi-change.good { background: #e8f5ec; color: var(--green); }
+  .kpi-change.warn { background: #fdf3e7; color: var(--amber); }
+  .kpi-change.bad { background: #fdecea; color: var(--red); }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+  /* BAR CHART */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-row .label { width: 110px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-row .bar-wrap { flex: 1; background: var(--border); border-radius: 2px; height: 28px; overflow: hidden; position: relative; }
+  .bar-row .bar-fill { height: 100%; border-radius: 2px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; transition: width 1s ease; background: var(--accent); }
+  .bar-row.amber-bar .bar-fill { background: var(--amber); }
+  .bar-row .bar-val { width: 75px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+  /* COMPARISON TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+  .comp-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .num { font-family: 'DM Serif Display', serif; font-size: 16px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag.act { background: #fdecea; color: var(--red); }
+  .tag.watch { background: #fdf3e7; color: var(--amber); }
+  .tag.good { background: #e8f5ec; color: var(--green); }
+
+  /* INSIGHT BOXES */
+  .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 20px 24px;
+  }
+  .insight.amber-edge { border-left-color: var(--amber); }
+  .insight.green-edge { border-left-color: var(--green); }
+  .insight-icon { font-size: 24px; margin-bottom: 10px; }
+  .insight h4 { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 48px; }
+  footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+
+  /* LIVE DEMO PLAYER (opens on this page, works on phones) */
+  .demo-modal {
+    border: none;
+    padding: 0;
+    margin: auto;
+    width: min(960px, 94vw);
+    max-height: 94vh;
+    background: #111;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+  .demo-modal::backdrop { background: rgba(10, 8, 20, .82); }
+  .demo-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 10px 10px 16px;
+    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  }
+  .demo-close {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.25); background: transparent; color: #fff;
+    font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .demo-close:hover { background: rgba(255,255,255,.1); }
+  .demo-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+  .demo-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .demo-foot {
+    padding: 10px 16px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: rgba(255,255,255,.7);
+  }
+  .demo-foot a { color: #d1b8ff; font-weight: 600; }
+</style>
+<link rel="stylesheet" href="interaction-feedback.css"/>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Fleet Operations Review · October 2025 – September 2026</div>
+  <h1>Commercial Fleet Pulse<br/><em>Operations, Fuel &amp; Delay</em> Analytics Suite</h1>
+  
+  <a href="https://drive.google.com/file/d/13-5AKz8wuRNiONEDNDz4rFfOMIINCHvL/view?usp=sharing" target="_blank" rel="noopener" class="btn-demo" id="demoBtn">
+    ▶ Live Demo
+  </a>
+
+  <div class="header-meta">
+    <span><strong>7,110 Trips</strong>Covered in 1 Year</span>
+    <span><strong>48 Vehicles</strong>12 Semis · 16 Box · 20 Vans</span>
+    <span><strong>36 Drivers</strong>Monitored Monthly</span>
+    <span><strong>$4.74M Revenue</strong>19% Profit Kept ($920K)</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. OVERVIEW -->
+  <div class="section-label">Section 01</div>
+  <div class="section-title">Overview</div>
+  <p class="text-block">
+    This project is an interactive, four-act logistics review dashboard built to analyze a fleet of 48 commercial delivery vehicles and 36 drivers across one year on the road. The report tells a clear operational story: how much money the fleet made and spent (Act I: The Fleet Pulse), where delays and lost hours are concentrated (Act II: Friction Points), which vehicle types and drivers run most efficiently (Act III: Driving Efficiency), and exactly what three actions management should take to recover lost profits (Act IV: What We Do Next).
+  </p>
+
+  <!-- 2. BUSINESS PROBLEM -->
+  <div class="section-label">Section 02</div>
+  <div class="section-title">Business Problem</div>
+  <p class="text-block">
+    Over the year, the fleet earned $4.74M but spent $3.82M, leaving an operating profit of 19%. While 86% of deliveries arrived on time, operational hiccups quietly drained $156K from the bottom line—equivalent to 17% of total company profit. Late deliveries, canceled runs, and overdue maintenance were burning unnecessary fuel and wasting labor hours. Dispatchers and fleet managers had no easy way to see which routes suffered the worst friction, which vehicles earned the best margins, or how much money could be saved with targeted operational fixes.
+  </p>
+
+  <!-- 3. METHODOLOGY -->
+  <div class="section-label">Section 03</div>
+  <div class="section-title">Methodology</div>
+  <p class="text-block">
+    The analytics pipeline was built in three clear steps:<br/>
+    • <strong>Trip &amp; Telematics Integration:</strong> Combined GPS trip logs, fuel consumption records, vehicle maintenance tickets, and driver shift times across 7,110 completed and scheduled runs.<br/>
+    • <strong>Cost Leak Categorization:</strong> Quantified financial losses into three plain buckets: profit lost on late trips ($108K / 69%), money spent on canceled runs that earned zero ($25K / 16%), and excess fuel burned by overdue-service vehicles ($24K / 15%).<br/>
+    • <strong>Actionable Opportunity Modeling:</strong> Formulated three realistic fixes with verified dollar values: servicing 17 vehicles marked Due Soon or Overdue (worth ~$29K/yr), cutting late trips by 25% on worst routes (worth ~$27K/yr), and pairing junior drivers with senior mentors for 3 months (worth ~$35K/yr).
+  </p>
+
+  <!-- 4. KEY INSIGHTS -->
+  <div class="section-label">Section 04</div>
+  <div class="section-title">Key Insights</div>
+  <div class="insights">
+    <div class="insight amber-edge">
+      <div class="insight-icon">⏱️</div>
+      <h4>Late Trips Are the Biggest Money Drain</h4>
+      <p>Late trips accounted for 944 deliveries and cost the company $108K in lost profit (69% of all lost money). The East region suffered the most delays (15.5% late trips), with South semi-trucks peaking at 18.9%.</p>
+    </div>
+    <div class="insight green-edge">
+      <div class="insight-icon">🚐</div>
+      <h4>Delivery Vans Keep the Most Profit</h4>
+      <p>Delivery Vans achieved the highest profit margin at 30.1% ($155K profit on $515K earned). In contrast, large Semi-Trucks generated the highest revenue ($3.01M) but kept only 15.9% in net profit.</p>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">🔧</div>
+      <h4>Overdue Maintenance Burns 12% More Fuel</h4>
+      <p>Vehicles with overdue service dropped in fuel efficiency score from 1.03 (Good) down to 0.89 (Overdue). Skipping regular service directly burns 12% more fuel and triggers avoidable trip cancellations.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 5. KPIs -->
+  <div class="section-label">Section 05</div>
+  <div class="section-title">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi dark">
+      <div class="kpi-label">Gross Revenue Earned</div>
+      <div class="kpi-value">$4.74M</div>
+      <div class="kpi-sub">$3.82M spent · 19% profit kept</div>
+      <span class="kpi-change good">Solid Operational Margin</span>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-label">Money Leaking This Year</div>
+      <div class="kpi-value">$156K</div>
+      <div class="kpi-sub">Equal to 17% of total annual profit</div>
+      <span class="kpi-change warn">Late Trips + Fuel + Cancels</span>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Recoverable Profit</div>
+      <div class="kpi-value">$91K / yr</div>
+      <div class="kpi-sub">+10% profit boost from 3 simple actions</div>
+      <span class="kpi-change good">High-Impact Target</span>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Total Lost Delay Hours</div>
+      <div class="kpi-value">2,339 hrs</div>
+      <div class="kpi-sub">Across 944 late trips (2.48 hrs avg delay)</div>
+      <span class="kpi-change">December Worst Month</span>
+    </div>
+  </div>
+
+  <!-- 6. VISUALIZATION HIGHLIGHTS -->
+  <div class="section-label">Section 06</div>
+  <div class="section-title">Visualization Highlights</div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Where the Money Is Leaking ($156K Total)</h3>
+      <div class="bar-row amber-bar">
+        <div class="label">Late Trips</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:69%;">69% Share</div></div>
+        <div class="bar-val">$108K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Canceled Trips</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:16%;">16% Share</div></div>
+        <div class="bar-val">$25K</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Poor Maintenance</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:15%;">15% Share</div></div>
+        <div class="bar-val">$24K</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">Late runs represent more than two-thirds of all avoidable financial losses, making route punctuality the top recovery priority.</p>
+    </div>
+
+    <div class="card">
+      <h3>Vehicle Profitability &amp; Efficiency</h3>
+      <div class="bar-row">
+        <div class="label">Delivery Van</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%;">Keeps 30.1% Profit</div></div>
+        <div class="bar-val">Top Margin</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Box Truck</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:78%;">Keeps 23.7% Profit</div></div>
+        <div class="bar-val">$284K Profit</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Semi-Truck</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:52%;">Keeps 15.9% Profit</div></div>
+        <div class="bar-val">$478K Profit</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">Delivery vans are the most profitable asset class on a percentage basis, while semi-trucks carry high volume but face tighter profit margins.</p>
+    </div>
+  </div>
+
+  <!-- ROUTE HEALTH CHECK TABLE -->
+  <div class="card" style="margin-bottom:48px; overflow-x:auto;">
+    <h3 style="font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px;">Top Bottleneck Delivery Corridors (Action Plan)</h3>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Corridor Route</th>
+          <th>Region</th>
+          <th>Late Trip Rate</th>
+          <th>Hours Lost</th>
+          <th>Operational Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>New York → Charlotte</td><td>East</td><td>14.3%</td><td class="num">171.2 hrs</td>
+          <td><span class="tag watch">Watch (7.3% share)</span></td>
+        </tr>
+        <tr>
+          <td>Houston → Atlanta</td><td>South</td><td>18.9%</td><td class="num">164.4 hrs</td>
+          <td><span class="tag act">Act Now (7.0% share)</span></td>
+        </tr>
+        <tr>
+          <td>Chicago → Minneapolis</td><td>North</td><td>15.1%</td><td class="num">163.8 hrs</td>
+          <td><span class="tag act">Act Now (7.0% share)</span></td>
+        </tr>
+        <tr>
+          <td>Dallas → Miami</td><td>South</td><td>18.9%</td><td class="num">134.9 hrs</td>
+          <td><span class="tag act">Act Now (5.8% share)</span></td>
+        </tr>
+        <tr>
+          <td>Detroit → Minneapolis</td><td>North</td><td>15.9%</td><td class="num">125.7 hrs</td>
+          <td><span class="tag act">Act Now (5.4% share)</span></td>
+        </tr>
+        <tr>
+          <td>Chicago → Milwaukee</td><td>North</td><td>15.7%</td><td class="num">123.0 hrs</td>
+          <td><span class="tag act">Act Now (5.3% share)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. CONCLUSION -->
+  <div class="section-label">Section 07</div>
+  <div class="section-title">Conclusion</div>
+  <p class="text-block">
+    In summary, organizing fleet operations into a four-act dashboard uncovered exactly where $156K in annual profit was leaking away. Instead of generic advice, the data points to three clear, high-return moves: service the 17 overdue vehicles immediately to save $29K in wasted fuel, add buffer time to chronic long-haul routes like Houston → Atlanta to cut delay costs by $27K, and pair junior drivers (who average 17% late trips vs 12% for others) with senior mentors for 3 months to save another $35K. Together, these three steps can win back $91K every year—boosting company profits by roughly 10%.
+  </p>
+
+</main>
+
+<footer>
+  <p>Prepared by <strong>Rashid Tobrazune</strong> · Logistics &amp; Fleet Analytics Case Profile · 2026 &nbsp;|&nbsp;
+  <a href="otherprojects.html">View Full Portfolio →</a></p>
+</footer>
+
+
+<!-- Live demo player: plays the Google Drive video inside this page instead of sending phones to the Drive app -->
+<dialog class="demo-modal" id="demoModal" aria-label="Live demo video">
+  <div class="demo-head">
+    <span>Live Demo · Commercial Fleet Pulse</span>
+    <button type="button" class="demo-close" id="demoClose" aria-label="Close video">✕</button>
+  </div>
+  <div class="demo-frame">
+    <iframe id="demoFrame" title="Live demo video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div class="demo-foot">Video not playing? <a id="demoDirect" href="#" target="_blank" rel="noopener">Open it in Google Drive ↗</a></div>
+</dialog>
+
+<script>
+(function () {
+  var btn = document.getElementById('demoBtn');
+  var modal = document.getElementById('demoModal');
+  if (!btn || !modal || typeof modal.showModal !== 'function') return; // old browsers: the normal link still works
+  var frame = document.getElementById('demoFrame');
+  var link = btn.getAttribute('href');
+  var m = link.match(/\/d\/([^/]+)/);
+  if (!m) return;
+  var preview = 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  document.getElementById('demoDirect').href = link;
+
+  btn.addEventListener('click', function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    frame.src = preview;
+    modal.showModal();
+  });
+  function close() { modal.close(); }
+  document.getElementById('demoClose').addEventListener('click', close);
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  modal.addEventListener('close', function () { frame.src = 'about:blank'; }); // stops the video
+})();
+</script>
+</body>
+</html>
+```<FollowUp>
+Would you also like me to update the project numbers in your `index.html` grid so all 9 selected projects are numbered consecutively from 01 to 09?
+</FollowUp>

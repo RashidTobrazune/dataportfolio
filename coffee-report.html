@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Coffee Chain Retail Profitability & Operations — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #faf6f0;          /* Warm cream */
+    --card: #ffffff;
+    --ink: #162436;         /* Deep roast navy */
+    --muted: #5e6b78;
+    --accent: #e86339;      /* Sunrise orange */
+    --accent-dark: #c84d26;
+    --accent-soft: #fdeee9;
+    --border: #e8ded2;
+    --green: #2d7a47;
+    --red: #c0392b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 64px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,0.03);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(232,99,57,0.2);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.1;
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  header h1 em { font-style: italic; color: #ffab91; }
+
+  /* FIX: the decorative circles were sitting on top of the Live Demo button on phones and blocking taps */
+  header::before,
+  header::after { pointer-events: none; }
+  header > * { position: relative; z-index: 1; }
+
+  /* LIVE DEMO BUTTON */
+  .btn-demo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .btn-demo:hover {
+    background: var(--accent-dark);
+    transform: translateY(-2px);
+  }
+
+  .header-meta {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    color: rgba(250,246,240,0.7);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+  }
+  .header-meta span strong { color: var(--bg); display: block; font-size: 15px; }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
+  /* TEXT BLOCKS */
+  .text-block { color: var(--muted); line-height: 1.8; margin-bottom: 40px; max-width: 850px; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .kpi.dark::before { background: var(--ink); }
+  .kpi.green::before { background: var(--green); }
+  .kpi.red::before { background: var(--red); }
+  .kpi-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 34px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .kpi-change { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 8px; background: var(--accent-soft); color: var(--accent-dark); }
+  .kpi-change.good { background: #e8f5ec; color: var(--green); }
+  .kpi-change.bad { background: #fdecea; color: var(--red); }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+  /* BAR CHART */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-row .label { width: 95px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-row .bar-wrap { flex: 1; background: var(--border); border-radius: 2px; height: 28px; overflow: hidden; position: relative; }
+  .bar-row .bar-fill { height: 100%; border-radius: 2px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; transition: width 1s ease; background: var(--ink); }
+  .bar-row.accent-bar .bar-fill { background: var(--accent); }
+  .bar-row.red-bar .bar-fill { background: var(--red); }
+  .bar-row .bar-val { width: 65px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+  /* COMPARISON TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+  .comp-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .num { font-family: 'DM Serif Display', serif; font-size: 16px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag.grow { background: #e8f5ec; color: var(--green); }
+  .tag.hold { background: #e6f4f8; color: #1f77b4; }
+  .tag.review { background: #fdecea; color: var(--red); }
+
+  /* INSIGHT BOXES */
+  .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 20px 24px;
+  }
+  .insight.dark-edge { border-left-color: var(--ink); }
+  .insight.green-edge { border-left-color: var(--green); }
+  .insight-icon { font-size: 24px; margin-bottom: 10px; }
+  .insight h4 { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 48px; }
+  footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+
+  /* LIVE DEMO PLAYER (opens on this page, works on phones) */
+  .demo-modal {
+    border: none; padding: 0; margin: auto;
+    width: min(960px, 94vw); max-height: 94vh;
+    background: #111; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+  .demo-modal::backdrop { background: rgba(10, 10, 15, .82); }
+  .demo-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 10px 10px 16px; color: #fff; font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; font-weight: 600;
+  }
+  .demo-close {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.25); background: transparent; color: #fff;
+    font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .demo-close:hover { background: rgba(255,255,255,.1); }
+  .demo-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+  .demo-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .demo-foot { padding: 10px 16px 14px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; color: rgba(255,255,255,.7); }
+  .demo-foot a { color: #fff; font-weight: 600; }
+</style>
+<link rel="stylesheet" href="interaction-feedback.css"/>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Retail Operations &amp; Strategy Review (2023–2024)</div>
+  <h1>Coffee Chain Retail<br/><em>Profitability &amp; Store Performance</em><br/>Interactive Analytics Suite</h1>
+  
+  <a href="https://drive.google.com/file/d/1iP4N6yKNeUE0LT0aQJaBf8tDRM0idLw3/view?usp=sharing" target="_blank" rel="noopener" class="btn-demo" id="demoBtn">
+    ▶ Live Demo
+  </a>
+
+  <div class="header-meta">
+    <span><strong>60 Stores</strong>Across 12 UK Regions</span>
+    <span><strong>£16.9M</strong>Total Net Profit</span>
+    <span><strong>19p kept per £1</strong>Chain-Wide Average</span>
+    <span><strong>61 Stores Evaluated</strong>26 Grow · 31 Hold · 3 Review</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. OVERVIEW -->
+  <div class="section-label">Section 01</div>
+  <div class="section-title">Overview</div>
+  <p class="text-block">
+    This project is an interactive data storytelling dashboard built to review the real-world financial and operational performance of a 60-store coffee chain across 12 UK regions. Instead of showing plain numbers, the system tells a four-part story: why busy stores are not always the most profitable, whether customer loyalty apps pay for themselves, which drinks actually make the money, and how adjusting weekend staff hours can save hundreds of thousands of pounds each year.
+  </p>
+
+  <!-- 2. BUSINESS PROBLEM -->
+  <div class="section-label">Section 02</div>
+  <div class="section-title">Business Problem</div>
+  <p class="text-block">
+    Every store in the chain sells essentially the same coffee at the same prices, and stores across different regions bring in roughly the same sales (about £62k per month, differing by only 8%). Yet, their final profits were wildly different: stores in Northern Ireland kept 28p of every £1 taken in, while stores in London kept just 8p. Management needed a clear tool to see why high-sales stores were struggling, whether customer reward programs were actually making money, and where to safely expand or cut costs in 2025.
+  </p>
+
+  <!-- 3. METHODOLOGY -->
+  <div class="section-label">Section 03</div>
+  <div class="section-title">Methodology</div>
+  <p class="text-block">
+    The analysis was conducted in three straightforward steps:<br/>
+    • <strong>Cost Breakdown:</strong> Split each store's incoming revenue into four clear buckets: Cost of Goods (what the coffee ingredients cost), Staff Wages, Shop Rent, and App Rewards.<br/>
+    • <strong>Story-Driven Interactive Modeling:</strong> Built dynamic narrative pages that test hypotheses—like comparing rent costs against customer traffic (finding a near-zero correlation of 0.15), and comparing app user share against store payback (correlation of 0.76).<br/>
+    • <strong>Region Scoring System:</strong> Ranked every region on a 100-point scale based on four simple business rules: Profit Margin (40%), Sales Growth (25%), Consistency / Few Loss Months (20%), and Sales per Square Foot (15%).
+  </p>
+
+  <!-- 4. KEY INSIGHTS -->
+  <div class="section-label">Section 04</div>
+  <div class="section-title">Key Insights</div>
+  <div class="insights">
+    <div class="insight">
+      <div class="insight-icon">🏢</div>
+      <h4>Rent Decides the Profit</h4>
+      <p>High sales do not equal high profit. London stores pay 19p of every £1 in rent and keep just 8p in profit, whereas Northern Ireland pays only 7p in rent and keeps 28p. Paying higher rent does not bring more customers.</p>
+    </div>
+    <div class="insight dark-edge">
+      <div class="insight-icon">📱</div>
+      <h4>App Rewards Lose Money in Slow Stores</h4>
+      <p>Across the chain, rewards cost £1.7M while members generated only £1.6M in extra sales, losing 10p on every £1 given out. Stores need over 40% app adoption for rewards to break even.</p>
+    </div>
+    <div class="insight green-edge">
+      <div class="insight-icon">☕</div>
+      <h4>Filter Coffee Is the Secret Winner</h4>
+      <p>Espresso brings in the most cash (46% of sales), but simple filter coffee is the best earner—it keeps 88p of every £1 taken in (compared to 84p for espresso and 74p for food).</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 5. KPIs -->
+  <div class="section-label">Section 05</div>
+  <div class="section-title">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi dark">
+      <div class="kpi-label">Total Store Network</div>
+      <div class="kpi-value">60 Stores</div>
+      <div class="kpi-sub">Across 12 UK regional territories</div>
+      <span class="kpi-change">Operating Baseline</span>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Annual Net Profit</div>
+      <div class="kpi-value">£16.9M</div>
+      <div class="kpi-sub">Overall chain profit (19p kept per £1)</div>
+      <span class="kpi-change good">Positive Baseline</span>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Weekend Staffing Savings</div>
+      <div class="kpi-value">~£986k</div>
+      <div class="kpi-sub">By cutting ~10 hours per store on weekends</div>
+      <span class="kpi-change">Immediate Quick Win</span>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">App Reward Net Deficit</div>
+      <div class="kpi-value">-£166k</div>
+      <div class="kpi-sub">£1.7M cost vs £1.6M extra member sales</div>
+      <span class="kpi-change bad">90p Return on £1</span>
+    </div>
+  </div>
+
+  <!-- 6. VISUALIZATION HIGHLIGHTS -->
+  <div class="section-label">Section 06</div>
+  <div class="section-title">Visualization Highlights</div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Region Score Rankings (Top vs Bottom)</h3>
+      <div class="bar-row accent-bar">
+        <div class="label">Wales</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:78%;">Score: 78/100</div></div>
+        <div class="bar-val">Rank #1</div>
+      </div>
+      <div class="bar-row accent-bar">
+        <div class="label">N. Ireland</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:77%;">Score: 77/100</div></div>
+        <div class="bar-val">Rank #2</div>
+      </div>
+      <div class="bar-row accent-bar">
+        <div class="label">East England</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:66%;">Score: 66/100</div></div>
+        <div class="bar-val">Rank #3</div>
+      </div>
+      <div class="bar-row red-bar">
+        <div class="label">North West</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:29%;">Score: 29/100</div></div>
+        <div class="bar-val">Rank #10</div>
+      </div>
+      <div class="bar-row red-bar">
+        <div class="label">South West</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:23%;">Score: 23/100</div></div>
+        <div class="bar-val">Rank #11</div>
+      </div>
+      <div class="bar-row red-bar">
+        <div class="label">London</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:5%;">Score: 5/100</div></div>
+        <div class="bar-val">Rank #12</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">Wales and Northern Ireland score highest due to low rent and high margins. London ranks last because rent eats up almost all profits.</p>
+    </div>
+
+    <div class="card">
+      <h3>Profit Kept per £1 by Product Stream</h3>
+      <div class="bar-row accent-bar">
+        <div class="label">Filter Coffee</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:88%;">Keeps 88p of £1</div></div>
+        <div class="bar-val">Best Earner</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Espresso Drinks</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:84%;">Keeps 84p of £1</div></div>
+        <div class="bar-val">46% Sales</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Food Items</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:74%;">Keeps 74p of £1</div></div>
+        <div class="bar-val">26% Sales</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Coffee Beans</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:68%;">Keeps 68p of £1</div></div>
+        <div class="bar-val">9% Sales</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">While espresso brings in the highest volume, filter coffee has the lowest ingredient cost and yields the highest profit margin.</p>
+    </div>
+  </div>
+
+  <!-- ACTION TABLE -->
+  <div class="card" style="margin-bottom:48px; overflow-x:auto;">
+    <h3 style="font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px;">2025 Store Action Matrix Summary</h3>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Category / Store Target</th>
+          <th>Total Stores</th>
+          <th>Primary Driver</th>
+          <th>Key Finding</th>
+          <th>Action Rule for 2025</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Expansion Regions (Wales, N. Ireland, East)</td><td class="num">26 Stores</td><td>Low Rent (< 10p per £1)</td><td>High margins (23p–28p profit per £1)</td>
+          <td><span class="tag grow">Open / Grow</span></td>
+        </tr>
+        <tr>
+          <td>Mid-Tier Steady Regions (Midlands, Yorkshire, Scotland)</td><td class="num">31 Stores</td><td>Balanced Cost Profile</td><td>Consistent sales, stable rent</td>
+          <td><span class="tag hold">Hold &amp; Maintain</span></td>
+        </tr>
+        <tr>
+          <td>Critical Outliers (Canary Wharf, Manchester, S. London)</td><td class="num">3 Stores</td><td>Excessive Rent (up to 22p per £1)</td><td>Keeps as little as 3p profit per £1</td>
+          <td><span class="tag review">Immediate Lease Review</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. CONCLUSION -->
+  <div class="section-label">Section 07</div>
+  <div class="section-title">Conclusion</div>
+  <p class="text-block">
+    In summary, turning complex retail sales logs into clear visual stories revealed four high-impact actions for the business: open new stores only where rent is low (like Wales and Northern Ireland), fix or pause the mobile reward app in branches where adoption is under 40%, promote high-margin filter coffee across marketing menus, and reduce weekend staffing by ~10 hours per store to unlock £986k in annual cost savings.
+  </p>
+
+</main>
+
+<footer>
+  <p>Prepared by <strong>Rashid Tobrazune</strong> · Retail Analytics Case Profile · 2026 &nbsp;|&nbsp;
+  <a href="otherprojects.html">View Full Portfolio →</a></p>
+</footer>
+
+
+<!-- Live demo player: plays the Google Drive video inside this page instead of sending phones to the Drive app -->
+<dialog class="demo-modal" id="demoModal" aria-label="Live demo video">
+  <div class="demo-head">
+    <span id="demoTitle">Live Demo</span>
+    <button type="button" class="demo-close" id="demoClose" aria-label="Close video">✕</button>
+  </div>
+  <div class="demo-frame">
+    <iframe id="demoFrame" title="Live demo video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div class="demo-foot">Video not playing? <a id="demoDirect" href="#" target="_blank" rel="noopener">Open it in Google Drive ↗</a></div>
+</dialog>
+
+<script>
+(function () {
+  var btn = document.getElementById('demoBtn');
+  var modal = document.getElementById('demoModal');
+  if (!btn || !modal || typeof modal.showModal !== 'function') return; // old browsers: the normal link still works
+  var frame = document.getElementById('demoFrame');
+  var link = btn.getAttribute('href');
+  var m = link.match(/\/d\/([^/]+)/);
+  if (!m) return;
+  var preview = 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  document.getElementById('demoDirect').href = link;
+  var name = (document.title || '').split(/\s[—–|-]\s/)[0];
+  if (name) document.getElementById('demoTitle').textContent = 'Live Demo · ' + name;
+
+  btn.addEventListener('click', function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    frame.src = preview;
+    modal.showModal();
+  });
+  function close() { modal.close(); }
+  document.getElementById('demoClose').addEventListener('click', close);
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  modal.addEventListener('close', function () { frame.src = 'about:blank'; }); // stops the video
+})();
+</script>
+</body>
+</html>

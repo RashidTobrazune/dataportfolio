@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Waste Management & Recycling Tracker — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f4f7f6;
+    --card: #ffffff;
+    --ink: #061c2e;         /* Dark Navy */
+    --muted: #526371;
+    --accent: #0b62a4;      /* Blue */
+    --accent2: #2ca02c;     /* Green */
+    --accent3: #17becf;     /* Teal */
+    --border: #d3dfdf;
+    --landfill: #ff7f0e;    /* Orange */
+    --good-rate: #2ca02c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 64px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,0.02);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(44,160,44,0.15);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent3);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.1;
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  header h1 em { font-style: italic; color: #a5d853; }
+  
+  /* FIX: the decorative circles were sitting on top of the Live Demo button on phones and blocking taps */
+  header::before,
+  header::after { pointer-events: none; }
+  header > * { position: relative; z-index: 1; }
+
+  /* LIVE DEMO BUTTON */
+  .btn-demo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent2);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .btn-demo:hover {
+    background: #228022;
+    transform: translateY(-2px);
+  }
+
+  .header-meta {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    color: rgba(244,247,246,0.6);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .header-meta span strong { color: var(--bg); display: block; font-size: 15px; }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
+  /* TEXT BLOCKS */
+  .text-block { color: var(--muted); line-height: 1.8; margin-bottom: 40px; max-width: 850px; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi.green::before { background: var(--good-rate); }
+  .kpi.orange::before { background: var(--landfill); }
+  .kpi.blue::before { background: var(--accent); }
+  .kpi-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .kpi-change { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 8px; }
+  .kpi-change.good { background: #e8f5ec; color: #2d7a47; }
+  .kpi-change.alert { background: #fff3cd; color: #856404; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+  /* BAR CHART */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-row .label { width: 75px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .bar-row .bar-wrap { flex: 1; background: var(--border); border-radius: 2px; height: 28px; overflow: hidden; position: relative; }
+  .bar-row .bar-fill { height: 100%; border-radius: 2px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; transition: width 1s ease; }
+  .bar-row .bar-val { width: 65px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+  /* FACILITY TIMELINE ROW */
+  .fac-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .fac-row:last-child { border-bottom: none; }
+  .fac-name { font-weight: 600; font-size: 13px; width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fac-bar-wrap { flex: 1; margin: 0 16px; background: var(--border); height: 10px; border-radius: 5px; overflow: hidden; }
+  .fac-bar { height: 100%; background: linear-gradient(90deg, #0b62a4, #17becf); border-radius: 5px; }
+  .fac-time { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--accent); width: 65px; text-align: right; }
+
+  /* COMPARISON TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+  .comp-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .num { font-family: 'DM Serif Display', serif; font-size: 16px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag.high { background: #e8f5ec; color: #2d7a47; }
+  .tag.mid { background: #e6f4f8; color: #1f77b4; }
+  .tag.zero { background: #fdecea; color: #d63031; }
+
+  /* INSIGHT BOXES */
+  .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 20px 24px;
+  }
+  .insight.green { border-left-color: var(--accent2); }
+  .insight.teal { border-left-color: var(--accent3); }
+  .insight-icon { font-size: 24px; margin-bottom: 10px; }
+  .insight h4 { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 48px; }
+  footer a { color: var(--accent); text-decoration: none; }
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+
+  /* LIVE DEMO PLAYER (opens on this page, works on phones) */
+  .demo-modal {
+    border: none; padding: 0; margin: auto;
+    width: min(960px, 94vw); max-height: 94vh;
+    background: #111; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+  .demo-modal::backdrop { background: rgba(10, 10, 15, .82); }
+  .demo-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 10px 10px 16px; color: #fff; font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; font-weight: 600;
+  }
+  .demo-close {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.25); background: transparent; color: #fff;
+    font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .demo-close:hover { background: rgba(255,255,255,.1); }
+  .demo-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+  .demo-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .demo-foot { padding: 10px 16px 14px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; color: rgba(255,255,255,.7); }
+  .demo-foot a { color: #fff; font-weight: 600; }
+</style>
+<link rel="stylesheet" href="interaction-feedback.css"/>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Environmental Operations Dashboard</div>
+  <h2>Waste Management & <em>Recycling</em><br/>Operational Performance</h2>
+  
+  <a href="https://drive.google.com/file/d/11oKz0BqS-jzQilswO8KGEkKwhld-8vjh/view?usp=sharing" target="_blank" rel="noopener" class="btn-demo" id="demoBtn">
+    ▶ Live Demo
+  </a>
+
+  <div class="header-meta">
+    <span><strong>15 Districts</strong>Total Area Tracked</span>
+    <span><strong>3,916 Total Tons</strong>Total Waste Collected</span>
+    <span><strong>$5.55M Capital Fund</strong>Project Grants Received</span>
+    <span><strong>Source</strong>Environmental Activity Log</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label">Section 01</div>
+  <div class="section-title">Overview</div>
+  <p class="text-block">
+    This project is an interactive dashboard built to track waste and recycling across 15 different areas. The system connects daily garbage collection data with environmental impact scores. This helps managers easily view total tons collected, check the quality of recycled materials, track funding money, and see how many people attend community green events.
+  </p>
+
+  <div class="section-label">Section 02</div>
+  <div class="section-title">Business Problem</div>
+  <p class="text-block">
+    Before this dashboard was built, waste data was a mess. Garbage numbers, station processing speeds, and carbon savings were hidden away in separate files. Because the data was disconnected, managers could not see which stations were slow, where trash was getting mixed up with recycling (about 9.76% is contaminated), or if the company was meeting its main goal of recycling at least 55.0% of all collected waste.
+  </p>
+
+  <div class="section-label">Section 03</div>
+  <div class="section-title">Methodology</div>
+  <p class="text-block">
+    The project was built using three simple steps:<br/>
+    • <strong>Data Cleaning (ETL):</strong> Collected raw data tables from different trash stations. Used Power Query to remove blank spaces, fix errors, and format everything into clean lists of numbers.<br/>
+    • <strong>Environmental Math:</strong> Used standard formulas to turn the weight of recycled materials into green points. For example, we calculated energy savings based on the final weight of reused materials.<br/>
+    • <strong>Simple Formulas:</strong> <br/>
+    &nbsp;&nbsp;- The Recycling Rate is calculated as: Total Tons Recycled divided by Total Tons Collected, multiplied by 100.<br/>
+    &nbsp;&nbsp;- Carbon Savings per Ton is calculated as: Total Tons of CO2 Saved divided by Total Tons of Recycled Waste.
+  </p>
+
+  <div class="section-label">Section 04</div>
+  <div class="section-title">Key Insights</div>
+  <div class="insights">
+    <div class="insight green">
+      <div class="insight-icon">📈</div>
+      <h4>Beat the Recycling Target</h4>
+      <p>The system shows a final recycling rate of 61.58%. This beats the company target of 55.0%, which keeps the project eligible for future funding grants.</p>
+    </div>
+    <div class="insight teal">
+      <div class="insight-icon">⚡</div>
+      <h4>Massive Energy Savings</h4>
+      <p>Recycled waste saved 1.73M kWh of energy. The charts show that April was the best month of the year, saving 233K kWh of electricity.</p>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">⚠️</div>
+      <h4>Slow Station Bottlenecks</h4>
+      <p>The time charts found a big delay at the South Transfer Station. It takes an average of 106.09 minutes to process waste there because the equipment is too slow.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 05</div>
+  <div class="section-title">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi blue">
+      <div class="kpi-label">Energy Saved</div>
+      <div class="kpi-value">1.73M kWh</div>
+      <div class="kpi-sub">Total electricity saved by recycling</div>
+      <span class="kpi-change good">Best Month: April (233K)</span>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-label">CO2 Saved</div>
+      <div class="kpi-value">2,180 MT</div>
+      <div class="kpi-sub">Total greenhouse gas prevented</div>
+      <span class="kpi-change good">0.56 Tons Saved per Recycled Ton</span>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Recycling Rate</div>
+      <div class="kpi-value">61.58%</div>
+      <div class="kpi-sub">Company target goal was: 55.0%</div>
+      <span class="kpi-change good">▲ +6.58% Above Target Goal</span>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">Trash Sent to Landfill</div>
+      <div class="kpi-value">1,500 Tons</div>
+      <div class="kpi-sub">38.42% of all collected waste</div>
+      <span class="kpi-change alert">Needs to drop by 5%</span>
+    </div>
+  </div>
+
+  <div class="section-label">Section 06</div>
+  <div class="section-title">Visualization Highlights</div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Recycled Weight by Material Type (Tons)</h3>
+      <div class="bar-row">
+        <div class="label">Container</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#0b62a4,#2ca02c);">855.57 Tons</div></div>
+        <div class="bar-val">855.57</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Other</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:78%;background:linear-gradient(90deg,#0b62a4,#2ca02c);">669.33 Tons</div></div>
+        <div class="bar-val">669.33</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Fiber</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:47%;background:linear-gradient(90deg,#0b62a4,#2ca02c);">405.59 Tons</div></div>
+        <div class="bar-val">405.59</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">E-Waste</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:31%;background:linear-gradient(90deg,#0b62a4,#2ca02c);">264.85 Tons</div></div>
+        <div class="bar-val">264.85</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Organics</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:25%;background:linear-gradient(90deg,#0b62a4,#2ca02c);">215.92 Tons</div></div>
+        <div class="bar-val">215.92</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">This chart clearly shows that Containers and Fiber items make up the biggest part of our recycling success.</p>
+    </div>
+
+    <div class="card">
+      <h3>Processing Speed by Station Terminal</h3>
+      <div class="fac-row">
+        <div class="fac-name">Franklin Materials Recovery</div>
+        <div class="fac-bar-wrap"><div class="fac-bar" style="width:66%;"></div></div>
+        <div class="fac-time">70.20 min</div>
+      </div>
+      <div class="fac-row">
+        <div class="fac-name">Downtown Sorting Center</div>
+        <div class="fac-bar-wrap"><div class="fac-bar" style="width:69%;"></div></div>
+        <div class="fac-time">73.45 min</div>
+      </div>
+      <div class="fac-row">
+        <div class="fac-name">Dublin Eco Center</div>
+        <div class="fac-bar-wrap"><div class="fac-bar" style="width:73%;"></div></div>
+        <div class="fac-time">77.71 min</div>
+      </div>
+      <div class="fac-row">
+        <div class="fac-name">North Transfer Station</div>
+        <div class="fac-bar-wrap"><div class="fac-bar" style="width:75%;"></div></div>
+        <div class="fac-time">79.32 min</div>
+      </div>
+      <div class="fac-row">
+        <div class="fac-name">South Transfer Station</div>
+        <div class="fac-bar-wrap"><div class="fac-bar" style="width:100%;"></div></div>
+        <div class="fac-time">106.09 min</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">This speed chart highlights a clear bottleneck at the South Transfer Station, showing management exactly where help is needed.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:48px; overflow-x:auto;">
+    <h3 style="font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px;">Recycling Efficiency Summary Table</h3>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Material Type</th>
+          <th>Tons Collected</th>
+          <th>Tons Recycled</th>
+          <th>Contamination Rate</th>
+          <th>Performance Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Metal Items</td><td class="num">427.99</td><td class="num">330.94</td><td>9.76%</td>
+          <td><span class="tag high">Excellent (77.0%)</span></td>
+        </tr>
+        <tr>
+          <td>Electronics (E-Waste)</td><td class="num">351.90</td><td class="num">264.85</td><td>9.76%</td>
+          <td><span class="tag high">Excellent (75.0%)</span></td>
+        </tr>
+        <tr>
+          <td>Organics (Food/Green)</td><td class="num">286.34</td><td class="num">215.92</td><td>9.76%</td>
+          <td><span class="tag high">Excellent (75.0%)</span></td>
+        </tr>
+        <tr>
+          <td>Textiles (Fabric)</td><td class="num">602.33</td><td class="num">402.12</td><td>9.76%</td>
+          <td><span class="tag high">Good (67.0%)</span></td>
+        </tr>
+        <tr>
+          <td>Plastic Tubs/Bottles</td><td class="num">531.51</td><td class="num">352.36</td><td>9.76%</td>
+          <td><span class="tag high">Good (66.0%)</span></td>
+        </tr>
+        <tr>
+          <td>Mixed Trash</td><td class="num">377.00</td><td class="num">0.00</td><td>9.76%</td>
+          <td><span class="tag zero">No Recycling (0.0%)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Section 07</div>
+  <div class="section-title">Conclusion</div>
+  <p class="text-block">
+    In short, bringing old spreadsheet files into a live Power BI dashboard completely changed how we manage waste. Reaching a final recycling rate of 61.58% proves our green programs work. Next, the company can focus on fixing the slow processing times at the South Transfer Station and teaching citizens how to properly sort items to lower our 9.76% trash contamination rate.
+  </p>
+
+</main>
+
+<footer>
+  <p>Prepared by <strong>Rashid Tobrazune</strong> · Operations Case Profile · 2026 &nbsp;|&nbsp;
+  <a href="otherprojects.html" target="_blank">View Full Portfolio →</a></p>
+</footer>
+
+
+<!-- Live demo player: plays the Google Drive video inside this page instead of sending phones to the Drive app -->
+<dialog class="demo-modal" id="demoModal" aria-label="Live demo video">
+  <div class="demo-head">
+    <span id="demoTitle">Live Demo</span>
+    <button type="button" class="demo-close" id="demoClose" aria-label="Close video">✕</button>
+  </div>
+  <div class="demo-frame">
+    <iframe id="demoFrame" title="Live demo video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div class="demo-foot">Video not playing? <a id="demoDirect" href="#" target="_blank" rel="noopener">Open it in Google Drive ↗</a></div>
+</dialog>
+
+<script>
+(function () {
+  var btn = document.getElementById('demoBtn');
+  var modal = document.getElementById('demoModal');
+  if (!btn || !modal || typeof modal.showModal !== 'function') return; // old browsers: the normal link still works
+  var frame = document.getElementById('demoFrame');
+  var link = btn.getAttribute('href');
+  var m = link.match(/\/d\/([^/]+)/);
+  if (!m) return;
+  var preview = 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  document.getElementById('demoDirect').href = link;
+  var name = (document.title || '').split(/\s[—–|-]\s/)[0];
+  if (name) document.getElementById('demoTitle').textContent = 'Live Demo · ' + name;
+
+  btn.addEventListener('click', function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    frame.src = preview;
+    modal.showModal();
+  });
+  function close() { modal.close(); }
+  document.getElementById('demoClose').addEventListener('click', close);
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  modal.addEventListener('close', function () { frame.src = 'about:blank'; }); // stops the video
+})();
+</script>
+</body>
+</html>

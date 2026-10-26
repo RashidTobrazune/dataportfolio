@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Ad Campaign Performance Analytics — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #f7f6f9;
+    --card: #ffffff;
+    --ink: #1a1226;         /* Dark Purple Navy */
+    --muted: #5d5669;
+    --accent: #6f42c1;      /* Marketing Purple */
+    --accent2: #0ea5e9;     /* Cyan Highlight */
+    --border: #e2def0;
+    --good-cpr: #2ca02c;    /* Green for low costs */
+    --bad-cpr: #d9534f;     /* Red for high costs */
+    --highlight: #f0ebfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 64px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,0.02);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    right: 40px; bottom: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(111,66,193,0.15);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    line-height: 1.1;
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  header h1 em { font-style: italic; color: #d6bbf2; }
+  
+  /* FIX: the decorative circles were sitting on top of the Live Demo button on phones and blocking taps */
+  header::before,
+  header::after { pointer-events: none; }
+  header > * { position: relative; z-index: 1; }
+
+  /* LIVE DEMO BUTTON */
+  .btn-demo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .btn-demo:hover {
+    background: #563396;
+    transform: translateY(-2px);
+  }
+
+  .header-meta {
+    display: flex; gap: 32px; flex-wrap: wrap;
+    color: rgba(247,246,249,0.6);
+    font-size: 13px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .header-meta span strong { color: var(--bg); display: block; font-size: 15px; }
+
+  /* MAIN */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* SECTION TITLE */
+  .section-label {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
+  /* TEXT BLOCKS */
+  .text-block { color: var(--muted); line-height: 1.8; margin-bottom: 40px; max-width: 850px; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .kpi.cyan::before { background: var(--accent2); }
+  .kpi.purple::before { background: var(--accent); }
+  .kpi-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 36px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--muted); }
+  .kpi-change { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-top: 8px; background: var(--highlight); color: var(--accent); }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 48px; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+  }
+  .card h3 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px; }
+
+  /* BAR CHART */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .bar-row .label { width: 85px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: right; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-row .bar-wrap { flex: 1; background: var(--border); border-radius: 2px; height: 28px; overflow: hidden; position: relative; }
+  .bar-row .bar-fill { height: 100%; border-radius: 2px; display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 12px; font-weight: 600; transition: width 1s ease; background: var(--accent); }
+  .bar-row .bar-val { width: 65px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+
+  /* COMPARISON TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+  .comp-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .num { font-family: 'DM Serif Display', serif; font-size: 16px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag.high { background: #e8f5ec; color: #2d7a47; }
+  .tag.low { background: #fdecea; color: #dc3545; }
+
+  /* INSIGHT BOXES */
+  .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .insight {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+    padding: 20px 24px;
+  }
+  .insight.cyan-edge { border-left-color: var(--accent2); }
+  .insight-icon { font-size: 24px; margin-bottom: 10px; }
+  .insight h4 { font-family: 'DM Serif Display', serif; font-size: 17px; margin-bottom: 6px; }
+  .insight p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  footer { text-align: center; padding: 32px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); margin-top: 48px; }
+  footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .divider { height: 1px; background: var(--border); margin: 48px 0; }
+
+  /* ANIMATE */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .kpi, .card, .insight { animation: fadeUp 0.5s ease both; }
+
+  /* LIVE DEMO PLAYER (opens on this page, works on phones) */
+  .demo-modal {
+    border: none; padding: 0; margin: auto;
+    width: min(960px, 94vw); max-height: 94vh;
+    background: #111; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+  .demo-modal::backdrop { background: rgba(10, 10, 15, .82); }
+  .demo-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 10px 10px 16px; color: #fff; font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; font-weight: 600;
+  }
+  .demo-close {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.25); background: transparent; color: #fff;
+    font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .demo-close:hover { background: rgba(255,255,255,.1); }
+  .demo-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+  .demo-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .demo-foot { padding: 10px 16px 14px; font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; color: rgba(255,255,255,.7); }
+  .demo-foot a { color: #fff; font-weight: 600; }
+</style>
+<link rel="stylesheet" href="interaction-feedback.css"/>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Digital Marketing Performance Review</div>
+  <h2>Multi-Campaign Performance Analytics<br/><em>Cost & Engagement</em></h2>
+  
+  <a href="https://drive.google.com/file/d/1ZoABnCMeZmqFVpSwNuOTF9jCcIvO9skH/view?usp=sharing" target="_blank" rel="noopener" class="btn-demo" id="demoBtn">
+    ▶ Live Demo
+  </a>
+
+  <div class="header-meta">
+    <span><strong>12 Ad Campaigns</strong>Total Groups Analyzed</span>
+    <span><strong>8 Data Analysts</strong>Project Team Size</span>
+    <span><strong>Currency: INR (₹)</strong>Cost Tracking Metric</span>
+    <span><strong>Platform</strong>Facebook & Meta Ads</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="section-label">Section 01</div>
+  <div class="section-title">Overview</div>
+  <p class="text-block">
+    This performance analysis project breaks down a series of digital "Link Click" ad campaigns built to drive web traffic to an event landing page[cite: 22, 28]. As the project team lead, I directed a team of 8 analysts to examine the data[cite: 5, 8]. The system monitors ad performance across multiple active variations, helping management identify which individual ad assets are driving cost-efficient user actions and sign-ups[cite: 28, 30].
+  </p>
+
+  <div class="section-label">Section 02</div>
+  <div class="section-title">Business Problem</div>
+  <p class="text-block">
+    The marketing team faced a common digital advertising challenge: some running ads were burning through the budget while bringing in almost zero results[cite: 38]. Without clear visual tracking, it was impossible to spot these failing campaigns[cite: 38]. The objective of this study was to isolate these low-performing, high-cost ad groups so the team could safely turn them off and back up these findings with visual charts for the finance department[cite: 39, 40].
+  </p>
+
+  <div class="section-label">Section 03</div>
+  <div class="section-title">Methodology</div>
+  <p class="text-block">
+    The project analysis was executed using four clear steps:<br/>
+    • <strong>Explaining Key Abbreviations:</strong> <br/>
+    &nbsp;&nbsp;- <strong>CTR (Click-Through Rate):</strong> The standard percentage of ad views that turn into actual clicks[cite: 31].<br/>
+    &nbsp;&nbsp;- <strong>Unique CTR:</strong> The percentage of individual, distinct users who clicked the ad[cite: 45].<br/>
+    &nbsp;&nbsp;- <strong>CPR (Cost Per Result):</strong> The exact amount of money spent to get a single desired user action[cite: 33].<br/>
+    • <strong>Data Cleaning & Math Check:</strong> Double-checked all incoming campaign logs to make sure cost numbers and click rates were accurately calculated across all datasets[cite: 44, 45].<br/>
+    • <strong>Visual Dashboard Build:</strong> Created scatter plots, custom line-bar charts, and bubble charts to clearly cross-compare campaign budgets against final engagement scores[cite: 47].
+  </p>
+
+  <div class="section-label">Section 04</div>
+  <div class="section-title">Key Insights</div>
+  <div class="insights">
+    <div class="insight cyan-edge">
+      <div class="insight-icon">⚠️</div>
+      <h4>Failing Campaigns Isolated</h4>
+      <p>Campaign 3 and Campaign 10 were flagged as the worst underperformers[cite: 53]. They pulled in the lowest amount of user clicks despite having the highest costs per result[cite: 53, 80].</p>
+    </div>
+    <div class="insight">
+      <div class="insight-icon">📉</div>
+      <h4>The Cost-Engagement Rule</h4>
+      <p>The data proves a strong rule: as the cost to get a single result (CPR) climbs higher, actual unique click engagement drops sharply[cite: 55]. High costs equal poor audience interest[cite: 80].</p>
+    </div>
+    <div class="insight cyan-edge">
+      <div class="insight-icon">✅</div>
+      <h4>Top Performers to Scale</h4>
+      <p>Campaign 2 and Campaign 8 were highlighted as highly successful, cost-efficient standouts[cite: 57]. They maintained very low costs while pulling in great audience interaction[cite: 57].</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section-label">Section 05</div>
+  <div class="section-title">Key Performance Indicators</div>
+  <div class="kpi-grid">
+    <div class="kpi purple">
+      <div class="kpi-label">Worst Performing Cost (Camp 3)</div>
+      <div class="kpi-value">₹69.32</div>
+      <div class="kpi-sub">Highest Cost Per Result recorded</div>
+      <span class="kpi-change bad">⚠️ Budget Leak</span>
+    </div>
+    <div class="kpi cyan">
+      <div class="kpi-label">Worst Unique CTR (Camp 10)</div>
+      <div class="kpi-value">10.19%</div>
+      <div class="kpi-sub">Lowest user click rate recorded</div>
+      <span class="kpi-change bad">Weak Audience Interest</span>
+    </div>
+    <div class="kpi purple">
+      <div class="kpi-label">Best Performing Cost (Camp 6)</div>
+      <div class="kpi-value">₹2.11</div>
+      <div class="kpi-sub">Incredible budget cost efficiency</div>
+      <span class="kpi-change good">▲ Highly Efficient</span>
+    </div>
+    <div class="kpi cyan">
+      <div class="kpi-label">Best Performing Cost (Camp 2)</div>
+      <div class="kpi-value">₹3.10</div>
+      <div class="kpi-sub">Low cost per result with high clicks</div>
+      <span class="kpi-change good">▲ Top Performer</span>
+    </div>
+  </div>
+
+  <div class="section-label">Section 06</div>
+  <div class="section-title">Visualization Highlights</div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Total Click Volume vs Unique Users</h3>
+      <div class="bar-row">
+        <div class="label">Campaign 2</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%; background: linear-gradient(90deg, #6f42c1, #0ea5e9);">Top Performer</div></div>
+        <div class="bar-val">Highest Clicks</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Campaign 8</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:75%; background: linear-gradient(90deg, #6f42c1, #0ea5e9);">High Clicks</div></div>
+        <div class="bar-val">Efficient</div>
+      </div>
+      <div class="bar-row" style="opacity: 0.4;">
+        <div class="label">Campaign 3</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:8%; background: #d9534f;">Failing Asset</div></div>
+        <div class="bar-val">Lowest</div>
+      </div>
+      <div class="bar-row" style="opacity: 0.4;">
+        <div class="label">Campaign 10</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:5%; background: #d9534f;">Failing Asset</div></div>
+        <div class="bar-val">Lowest</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">The charts show that Campaign 3 and Campaign 10 brought in the absolute lowest amount of overall clicks and unique user views[cite: 95, 96].</p>
+    </div>
+
+    <div class="card">
+      <h3>Cost Per Result (CPR) Bill Check</h3>
+      <div class="bar-row">
+        <div class="label">Campaign 3</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:100%; background: #d9534f;">₹69.32 Cost</div></div>
+        <div class="bar-val">Highest Risk</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Campaign 10</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:81%; background: #d9534f;">₹55.95 Cost</div></div>
+        <div class="bar-val">High Risk</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Campaign 9</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:40%; background: #666;">₹28.05 Cost</div></div>
+        <div class="bar-val">Moderate</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Campaign 2</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:4%; background: #2ca02c;">₹3.10 Cost</div></div>
+        <div class="bar-val">Optimal</div>
+      </div>
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">This custom line-bar chart highlights that Campaign 3 and Campaign 10 force you to spend way too much money to acquire a single click[cite: 101, 106].</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:48px; overflow-x:auto;">
+    <h3 style="font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 20px;">Strategic Campaign Performance Matrix</h3>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Campaign Identity</th>
+          <th>Cost Per Result (CPR)</th>
+          <th>Unique Click Rate (CTR)</th>
+          <th>Interaction Quality</th>
+          <th>Management Action Rule</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Campaign 3</td><td class="num">₹69.32</td><td class="num">12.73%</td><td>Very Weak [cite: 122]</td>
+          <td><span class="tag low">Discontinue / Turn Off [cite: 145]</span></td>
+        </tr>
+        <tr>
+          <td>Campaign 10</td><td class="num">₹55.95</td><td class="num">10.19%</td><td>Very Weak [cite: 122]</td>
+          <td><span class="tag low">Discontinue / Turn Off [cite: 145]</span></td>
+        </tr>
+        <tr>
+          <td>Campaign 9</td><td class="num">₹28.05</td><td class="num">12.00%</td><td>Moderate</td>
+          <td><span class="tag mid">Hold & Monitor</span></td>
+        </tr>
+        <tr>
+          <td>Campaign 2</td><td class="num">₹3.10</td><td class="num">24.50%</td><td>Strong [cite: 57]</td>
+          <td><span class="tag high">Scale Up Budget [cite: 146]</span></td>
+        </tr>
+        <tr>
+          <td>Campaign 8</td><td class="num">₹2.69</td><td class="num">28.00%</td><td>Strong [cite: 57]</td>
+          <td><span class="tag high">Scale Up Budget [cite: 146]</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-label">Section 07</div>
+  <div class="section-title">Conclusion</div>
+  <p class="text-block">
+    In summary, using a live dashboard to track ad spending protects your marketing budget from severe leaks. Our data metrics clearly justify the immediate decision to discontinue Campaign 3 and Campaign 10 due to high costs and weak click volumes[cite: 145]. Moving forward, marketing capital should be channeled directly into the highly efficient channels of Campaign 2 and Campaign 8 to maximize sign-ups without increasing overhead budgets[cite: 146].
+  </p>
+
+</main>
+
+<footer>
+  <p>Prepared by <strong>Rashid Tobrazune</strong> · Ad Performance Profile · 2025 &nbsp;|&nbsp;
+  <a href="otherprojects.html" target="_blank">View Full Portfolio →</a></p>
+</footer>
+
+
+<!-- Live demo player: plays the Google Drive video inside this page instead of sending phones to the Drive app -->
+<dialog class="demo-modal" id="demoModal" aria-label="Live demo video">
+  <div class="demo-head">
+    <span id="demoTitle">Live Demo</span>
+    <button type="button" class="demo-close" id="demoClose" aria-label="Close video">✕</button>
+  </div>
+  <div class="demo-frame">
+    <iframe id="demoFrame" title="Live demo video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div class="demo-foot">Video not playing? <a id="demoDirect" href="#" target="_blank" rel="noopener">Open it in Google Drive ↗</a></div>
+</dialog>
+
+<script>
+(function () {
+  var btn = document.getElementById('demoBtn');
+  var modal = document.getElementById('demoModal');
+  if (!btn || !modal || typeof modal.showModal !== 'function') return; // old browsers: the normal link still works
+  var frame = document.getElementById('demoFrame');
+  var link = btn.getAttribute('href');
+  var m = link.match(/\/d\/([^/]+)/);
+  if (!m) return;
+  var preview = 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  document.getElementById('demoDirect').href = link;
+  var name = (document.title || '').split(/\s[—–|-]\s/)[0];
+  if (name) document.getElementById('demoTitle').textContent = 'Live Demo · ' + name;
+
+  btn.addEventListener('click', function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    frame.src = preview;
+    modal.showModal();
+  });
+  function close() { modal.close(); }
+  document.getElementById('demoClose').addEventListener('click', close);
+  modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+  modal.addEventListener('close', function () { frame.src = 'about:blank'; }); // stops the video
+})();
+</script>
+</body>
+</html>
