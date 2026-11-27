@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Report Wireframe Generator</title>
+  <meta name="description" content="Turn a topic or your CSV/Excel data into a sketched data-story wireframe for a Power BI report, before you build it." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230E141B'/><text x='29' y='43' text-anchor='middle' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='29' fill='%23F2C811'>RT</text><circle cx='53' cy='41' r='3.6' fill='%23EEF1F4'/></svg>" />
+  <script>
+    /* same light/dark choice as the portfolio */
+    (function () {
+      var t = 'dark';
+      try { var st = localStorage.getItem('rt-theme'); if (st === 'light' || st === 'dark') t = st; } catch (e) { }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=JetBrains+Mono:wght@400;600&family=Patrick+Hand&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --canvas: #0E141B;
+      --panel: #141C26;
+      --panel2: #1A2430;
+      --panel3: #223040;
+      --line: rgba(238, 241, 244, 0.08);
+      --line2: rgba(238, 241, 244, 0.16);
+      --accent: #F2C811;
+      --accent-text: #F2C811;
+      --accent-dim: rgba(242, 200, 17, 0.12);
+      --text: #EEF1F4;
+      --muted: #93A1B0;
+      --danger: #F0805F;
+      --sketch: rgba(238, 241, 244, 0.32);
+      --wf-bg: #1A2430;
+      --wf-el: #141C26;
+      --on-accent: #0E141B;
+      --font-display: 'Archivo', 'Arial Narrow', Arial, sans-serif;
+      --font-body: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+      --radius: 6px;
+    }
+
+    html[data-theme="light"] {
+      color-scheme: light;
+      --canvas: #F3F4F6;
+      --panel: #FFFFFF;
+      --panel2: #F2F4F7;
+      --panel3: #E1E6EC;
+      --line: rgba(14, 20, 27, 0.09);
+      --line2: rgba(14, 20, 27, 0.17);
+      --accent-text: #8A6B00;
+      --accent-dim: rgba(242, 200, 17, 0.18);
+      --text: #111821;
+      --muted: #4B5869;
+      --danger: #B3401F;
+      --sketch: rgba(14, 20, 27, 0.34);
+      --wf-bg: #E9EDF2;
+      --wf-el: #FFFFFF;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--canvas);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--accent-text);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    @media (min-width: 700px) {
+      .wrap {
+        padding: 0 2rem;
+      }
+    }
+
+    /* top bar */
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: color-mix(in srgb, var(--canvas) 90%, transparent);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .top .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      height: 60px;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.3rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span {
+      color: var(--accent-text);
+    }
+
+    .top-links {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .back {
+      font-size: .85rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .back:hover {
+      color: var(--text);
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line2);
+      border-radius: 999px;
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* intro */
+    .intro {
+      padding: 3rem 0 1.5rem;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--accent-text);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: .8rem;
+    }
+
+    .tag::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-variation-settings: "wdth" 125;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -.02em;
+      line-height: .95;
+      margin-bottom: .8rem;
+    }
+
+    .lead {
+      color: var(--muted);
+      max-width: 64ch;
+      font-size: 1rem;
+    }
+
+    /* form */
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .box-h {
+      display: flex;
+      align-items: baseline;
+      gap: .7rem;
+      flex-wrap: wrap;
+    }
+
+    .box-h .step {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--accent-text);
+    }
+
+    .box-h h2 {
+      font-family: var(--font-display);
+      font-variation-settings: "wdth" 110;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .box-h .opt {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    .row3 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.1rem;
+    }
+
+    @media (min-width: 900px) {
+      .row3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .f {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+      min-width: 0;
+    }
+
+    .f label,
+    .f .lbl {
+      font-family: var(--font-mono);
+      font-size: .74rem;
+      color: var(--muted);
+    }
+
+    .f input[type="text"],
+    .f input[type="password"],
+    .f input[type="number"],
+    .f textarea {
+      background: var(--panel2);
+      border: 1px solid var(--line2);
+      border-radius: var(--radius);
+      padding: .6rem .8rem;
+      width: 100%;
+    }
+
+    .f input.big {
+      font-size: 1.1rem;
+      padding: .8rem .9rem;
+    }
+
+    .f textarea {
+      min-height: 3rem;
+      resize: vertical;
+    }
+
+    .hint {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+    }
+
+    .chip {
+      font-size: .8rem;
+      background: transparent;
+      border: 1px solid var(--line2);
+      border-radius: 999px;
+      padding: .3rem .75rem;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .chip:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .chip[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--on-accent);
+      font-weight: 600;
+    }
+
+    .chip.ex::before {
+      content: '+ ';
+    }
+
+    /* upload */
+    .drop {
+      border: 1.5px dashed var(--line2);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      text-align: center;
+      background: var(--panel2);
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+
+    .drop:hover,
+    .drop.over {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .drop b {
+      display: block;
+      margin-bottom: .2rem;
+    }
+
+    .files {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .file {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: .7rem .8rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: .3rem .8rem;
+      background: var(--panel2);
+    }
+
+    .file .fn {
+      font-weight: 700;
+      font-size: .9rem;
+      overflow-wrap: anywhere;
+    }
+
+    .file .fm {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    .file .cols {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .3rem;
+    }
+
+    .col {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      border: 1px solid var(--line2);
+      border-radius: 4px;
+      padding: .05rem .4rem;
+      color: var(--muted);
+    }
+
+    .col i {
+      font-style: normal;
+      color: var(--accent-text);
+      margin-right: .25rem;
+    }
+
+    .x {
+      border: 0;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .8rem;
+      text-decoration: underline;
+      align-self: start;
+    }
+
+    .err {
+      color: var(--danger);
+      font-size: .82rem;
+    }
+
+    /* mode */
+    .seg {
+      display: inline-flex;
+      gap: .25rem;
+      padding: .25rem;
+      border: 1px solid var(--line2);
+      border-radius: 999px;
+      background: var(--panel2);
+      flex-wrap: wrap;
+    }
+
+    .seg button {
+      border: 0;
+      background: transparent;
+      border-radius: 999px;
+      padding: .45rem 1rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .seg button[aria-pressed="true"] {
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .ai-only[hidden] {
+      display: none;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+
+    .check input {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--accent);
+    }
+
+    .privacy {
+      font-size: .8rem;
+      color: var(--muted);
+      border-left: 3px solid var(--accent);
+      padding: .2rem 0 .2rem .8rem;
+    }
+
+    .go {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      align-items: center;
+    }
+
+    .btn {
+      font-weight: 700;
+      font-size: .9rem;
+      border-radius: 999px;
+      padding: .7rem 1.3rem;
+      cursor: pointer;
+      border: 1px solid var(--line2);
+      background: var(--panel2);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: var(--on-accent);
+      border-color: var(--accent);
+      font-size: 1rem;
+      padding: .85rem 1.6rem;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+    }
+
+    .btn[disabled] {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .btn[hidden] {
+      display: none;
+    }
+
+    .status {
+      font-size: .88rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .status.bad {
+      color: var(--danger);
+    }
+
+    .spin {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--line2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* output */
+    #out[hidden] {
+      display: none;
+    }
+
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .bar .btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    .bar .btn {
+      font-size: .8rem;
+      padding: .5rem 1rem;
+    }
+
+    .match {
+      font-size: .85rem;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+
+    .match b {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .card h2 {
+      font-family: var(--font-display);
+      font-variation-settings: "wdth" 110;
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-bottom: .6rem;
+    }
+
+    .kicker {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--accent-text);
+      margin-bottom: .35rem;
+    }
+
+    .bigidea {
+      font-family: var(--font-display);
+      font-variation-settings: "wdth" 105;
+      font-size: clamp(1.15rem, 2.4vw, 1.5rem);
+      font-weight: 700;
+      line-height: 1.3;
+      max-width: 60ch;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem 1.5rem;
+      margin-top: .9rem;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+
+    .meta-row b {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+      gap: .8rem;
+    }
+
+    .flow a {
+      display: block;
+      text-decoration: none;
+      color: var(--text);
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: .8rem .9rem;
+    }
+
+    .flow a:hover {
+      border-color: var(--accent);
+    }
+
+    .flow .fq {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .flow .fh {
+      font-weight: 700;
+      font-size: .92rem;
+      line-height: 1.35;
+      margin-top: .2rem;
+    }
+
+    .tips {
+      padding-left: 1.1rem;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .tips li {
+      margin-bottom: .3rem;
+    }
+
+    .tips b {
+      color: var(--text);
+    }
+
+    /* a wireframe page */
+    .wf-page {
+      margin: 2rem 0;
+      scroll-margin-top: 80px;
+    }
+
+    .wf-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: .4rem 1rem;
+      margin-bottom: .7rem;
+    }
+
+    .wf-title .pg {
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      color: var(--accent-text);
+    }
+
+    .wf-title h2 {
+      font-family: var(--font-display);
+      font-variation-settings: "wdth" 115;
+      font-size: 1.35rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .wf-title .sample {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .wf-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+    }
+
+    @media (min-width: 1100px) {
+      .wf-layout {
+        grid-template-columns: minmax(0, 1fr) 22rem;
+        align-items: start;
+      }
+    }
+
+    .wf-main {
+      min-width: 0;
+    }
+
+    .wf-scroll {
+      overflow-x: auto;
+      border-radius: var(--radius);
+    }
+
+    .wf-canvas {
+      container-type: inline-size;
+      min-width: 760px;
+      aspect-ratio: 16 / 9;
+      background: var(--wf-bg);
+      border: 1px solid var(--line2);
+      border-radius: var(--radius);
+      padding: 1.2cqw;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: repeat(12, minmax(0, 1fr));
+      gap: .9cqw;
+    }
+
+    .wf-el {
+      position: relative;
+      background: var(--wf-el);
+      border: 1px solid var(--line);
+      border-radius: .5cqw;
+      padding: .8cqw .9cqw;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: .3cqw;
+    }
+
+    .wf-el.plain {
+      background: transparent;
+      border: 0;
+      padding: .2cqw;
+    }
+
+    .wf-el.bad {
+      border-color: var(--accent);
+    }
+
+    .wf-el.ask {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      justify-content: center;
+    }
+
+    .wf-n {
+      position: absolute;
+      top: .35cqw;
+      right: .35cqw;
+      width: 1.7cqw;
+      height: 1.7cqw;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-family: var(--font-mono);
+      font-size: .95cqw;
+      font-weight: 600;
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+
+    .wf-q {
+      font-family: var(--font-mono);
+      font-size: 1cqw;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--accent-text);
+    }
+
+    .wf-h {
+      font-family: var(--font-display);
+      font-variation-settings: "wdth" 110;
+      font-size: 2.05cqw;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .wf-s {
+      font-size: 1.05cqw;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .wf-t {
+      font-size: 1cqw;
+      font-weight: 700;
+      line-height: 1.25;
+      padding-right: 2cqw;
+    }
+
+    .wf-k-n {
+      font-size: .95cqw;
+      color: var(--muted);
+      padding-right: 2cqw;
+    }
+
+    .wf-k-v {
+      font-family: var(--font-display);
+      font-size: 2.5cqw;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .wf-el.bad .wf-k-v {
+      color: var(--accent-text);
+    }
+
+    .wf-k-c {
+      font-size: .9cqw;
+      color: var(--muted);
+    }
+
+    .wf-txt {
+      font-size: 1cqw;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .wf-txt b {
+      color: var(--text);
+    }
+
+    .wf-el.ask .wf-txt {
+      color: var(--text);
+      font-size: 1.15cqw;
+      font-weight: 600;
+    }
+
+    .wf-pills {
+      display: flex;
+      flex-direction: column;
+      gap: .4cqw;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .wf-pill {
+      font-size: .9cqw;
+      border: 1px solid var(--line2);
+      border-radius: 99px;
+      padding: .25cqw .7cqw;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wf-pill::after {
+      content: ' ▾';
+    }
+
+    .wf-pills.seg {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .wf-pills.seg .wf-pill::after {
+      content: '';
+    }
+
+    .wf-pills.seg .wf-pill.on {
+      background: var(--accent);
+      color: var(--on-accent);
+      border-color: var(--accent);
+    }
+
+    .wf-svg {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      color: var(--sketch);
+    }
+
+    .wf-svg .hl {
+      fill: var(--accent);
+      stroke: var(--accent);
+    }
+
+    .wf-svg .hl-s {
+      stroke: var(--accent);
+    }
+
+    .wf-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85cqw;
+      color: var(--muted);
+    }
+
+    .wf-tbl th,
+    .wf-tbl td {
+      text-align: left;
+      padding: .25cqw .4cqw;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 16cqw;
+    }
+
+    .wf-tbl th {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .wf-tbl td.hl {
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+
+    .wf-notes {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+
+    .wf-notes li {
+      display: grid;
+      grid-template-columns: 1.6rem minmax(0, 1fr);
+      gap: .6rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: .7rem .8rem;
+      font-size: .86rem;
+      line-height: 1.5;
+    }
+
+    .wf-notes .num {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      font-weight: 600;
+      display: grid;
+      place-items: center;
+    }
+
+    .wf-notes .why {
+      color: var(--muted);
+    }
+
+    .wf-notes .why b {
+      color: var(--text);
+    }
+
+    .wf-notes .spec {
+      margin-top: .3rem;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--accent-text);
+      word-break: break-word;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+      gap: 1rem;
+    }
+
+    .measures {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: .8rem 1rem;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      line-height: 1.7;
+    }
+
+    .swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin: .4rem 0 .8rem;
+    }
+
+    .sw {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    .sw i {
+      width: 1.3rem;
+      height: 1.3rem;
+      border-radius: 4px;
+      border: 1px solid var(--line2);
+    }
+
+    /* ---------- data story ---------- */
+    .story-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem 1.5rem;
+      align-items: center;
+    }
+
+    @media (min-width: 900px) {
+      .story-grid {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      }
+    }
+
+    .arc {
+      width: 100%;
+      height: auto;
+      color: var(--muted);
+    }
+
+    .arc .arc-l {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      fill: var(--muted);
+    }
+
+    .arc .arc-dot {
+      fill: var(--accent);
+    }
+
+    .arc .arc-n {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      fill: var(--on-accent);
+    }
+
+    .acts {
+      display: flex;
+      flex-direction: column;
+      gap: .7rem;
+    }
+
+    .act-row {
+      display: grid;
+      grid-template-columns: 7.5rem minmax(0, 1fr);
+      gap: .8rem;
+      align-items: baseline;
+      font-size: .9rem;
+    }
+
+    .act-row p {
+      color: var(--muted);
+    }
+
+    .act-row b {
+      color: var(--text);
+    }
+
+    .act {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      border-radius: 999px;
+      padding: .2rem .6rem;
+      border: 1px solid var(--line2);
+      color: var(--muted);
+      justify-self: start;
+      white-space: nowrap;
+    }
+
+    .act.conflict {
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .act.resolution {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .story-two {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      gap: 1rem;
+      margin: 1.1rem 0 .9rem;
+    }
+
+    .story-two > div {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: .8rem 1rem;
+      font-size: .95rem;
+    }
+
+    .script {
+      margin-top: .8rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: .9rem 1rem;
+    }
+
+    .script-h {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      flex-wrap: wrap;
+      margin-bottom: .6rem;
+    }
+
+    .script dl {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: .6rem 1.2rem;
+    }
+
+    .script dt {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: var(--accent-text);
+      margin-bottom: .15rem;
+    }
+
+    .script dd {
+      font-size: .88rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    /* ---------- Sketch style: a hand-drawn wireframe ---------- */
+    #out.sketch .wf-canvas {
+      font-family: 'Patrick Hand', 'Comic Sans MS', 'Segoe Print', cursive;
+      background-image: radial-gradient(var(--line) 1px, transparent 1px);
+      background-size: 1.6cqw 1.6cqw;
+    }
+
+    #out.sketch .wf-canvas * {
+      font-family: inherit !important;
+    }
+
+    #out.sketch .wf-el {
+      background: transparent;
+      border: 1.6px solid var(--sketch);
+      border-radius: 1.4cqw .3cqw 1.1cqw .4cqw / .4cqw 1.2cqw .3cqw 1.3cqw;
+    }
+
+    #out.sketch .wf-el:nth-child(3n) {
+      border-radius: .3cqw 1.3cqw .4cqw 1.2cqw / 1.2cqw .4cqw 1.4cqw .3cqw;
+    }
+
+    #out.sketch .wf-el.plain {
+      border: 0;
+    }
+
+    #out.sketch .wf-el.bad,
+    #out.sketch .wf-el.ask {
+      border-color: var(--accent);
+      border-width: 2px;
+    }
+
+    #out.sketch .wf-h {
+      font-size: 2.3cqw;
+      font-weight: 400;
+    }
+
+    #out.sketch .wf-k-v {
+      font-weight: 400;
+      font-size: 2.8cqw;
+    }
+
+    #out.sketch .wf-t,
+    #out.sketch .wf-k-n,
+    #out.sketch .wf-txt,
+    #out.sketch .wf-s {
+      font-size: 1.15cqw;
+    }
+
+    #out.sketch .wf-svg {
+      filter: url(#wf-rough);
+    }
+
+    #out.sketch .wf-pill {
+      border-style: dashed;
+    }
+
+    .bar .seg {
+      display: inline-flex;
+      gap: .2rem;
+      padding: .2rem;
+      border: 1px solid var(--line2);
+      border-radius: 999px;
+      background: var(--panel2);
+    }
+
+    .bar .seg button {
+      border: 0;
+      background: transparent;
+      border-radius: 999px;
+      padding: .35rem .85rem;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .bar .seg button[aria-pressed="true"] {
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 1.5rem;
+      transform: translateX(-50%) translateY(150%);
+      background: var(--text);
+      color: var(--canvas);
+      padding: .6rem 1.1rem;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 600;
+      transition: transform .3s;
+      z-index: 20;
+    }
+
+    .toast.on {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      margin-top: 3rem;
+      padding: 1.5rem 0 2.5rem;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .toast,
+      .drop {
+        transition: none;
+      }
+
+      .spin {
+        animation-duration: 2.4s;
+      }
+    }
+
+    @media print {
+
+      :root,
+      html[data-theme="light"],
+      html[data-theme="dark"] {
+        --canvas: #fff;
+        --panel: #fff;
+        --panel2: #f4f5f7;
+        --text: #111;
+        --muted: #444;
+        --line: #ddd;
+        --line2: #bbb;
+        --wf-bg: #f3f4f6;
+        --wf-el: #fff;
+        --sketch: rgba(0, 0, 0, .35);
+        --accent-text: #7a5e00;
+      }
+
+      .top,
+      .intro,
+      .form,
+      .bar .btns,
+      footer,
+      .toast {
+        display: none !important;
+      }
+
+      .wf-page {
+        break-before: page;
+      }
+
+      .wf-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .wf-canvas {
+        min-width: 0;
+      }
+
+      .wf-scroll {
+        overflow: visible;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="logo" href="index.html">R<span>T.</span></a>
+      <div class="top-links">
+        <a class="back" href="index.html#learn">← Back to learning resources</a>
+        <button type="button" class="icon-btn" id="themeBtn" aria-label="Switch light or dark mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke-linejoin="round" /></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <div class="tag">Free tool · Plan before you build</div>
+      <h1>Report Wireframe Generator</h1>
+      <p class="lead">Describe your topic, or upload your CSV and Excel files. it sketches a data story for your Power BI report: the big idea, a page-by-page wireframe, which chart goes where and why, and the measures to build. Sketch the story first, and building gets much faster.</p>
+    </section>
+
+    <form class="form" id="form" autocomplete="off" novalidate>
+      <!-- 1. topic -->
+      <div class="box">
+        <div class="box-h"><span class="step">01</span><h2>What is the report about?</h2></div>
+        <div class="f">
+          <label for="topic">Topic or dataset</label>
+          <input class="big" type="text" id="topic" placeholder="e.g. Hotel bookings and guest loyalty" maxlength="200" />
+          <div class="chips" aria-label="Examples: click to fill in the topic">
+            <button type="button" class="chip ex">Hotel bookings and guest loyalty</button>
+            <button type="button" class="chip ex">Retail sales and discounts</button>
+            <button type="button" class="chip ex">Employee attrition</button>
+            <button type="button" class="chip ex">Hospital wait times</button>
+            <button type="button" class="chip ex">Delivery fleet operations</button>
+            <button type="button" class="chip ex">Customer churn for a subscription app</button>
+            <button type="button" class="chip ex">School exam results</button>
+            <button type="button" class="chip ex">Marketing campaign performance</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. audience, goal, pages -->
+      <div class="box">
+        <div class="box-h"><span class="step">02</span><h2>Who is it for, and what should it do?</h2><span class="opt">Pick one or more, or type your own</span></div>
+        <div class="row3">
+          <div class="f" role="group" aria-labelledby="audL">
+            <span class="lbl" id="audL">Audience</span>
+            <div class="chips" data-group="aud" data-multi="1">
+              <button type="button" class="chip" aria-pressed="false" data-v="exec">Executives / board</button>
+              <button type="button" class="chip" aria-pressed="true" data-v="manager">Managers</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="analyst">Analysts</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="public">General public</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="manager">Operations team</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="exec">Investors</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="manager">Clients</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="public">Donors / funders</button>
+            </div>
+            <input type="text" id="audOther" placeholder="Or type your own, e.g. regional sales leads" maxlength="120" aria-label="Your own audience" />
+          </div>
+          <div class="f" role="group" aria-labelledby="goalL">
+            <span class="lbl" id="goalL">What should the report do?</span>
+            <div class="chips" data-group="goal" data-multi="1">
+              <button type="button" class="chip" aria-pressed="true" data-v="explain">Explain a problem and fix it</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="decide">Get a decision approved</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="monitor">Monitor performance</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="decide">Compare options</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="explain">Find what drives results</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="monitor">Track progress to target</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="explain">Tell a public story</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="decide">Forecast and plan</button>
+            </div>
+            <input type="text" id="goalOther" placeholder="Or type your own, e.g. justify a new branch" maxlength="160" aria-label="Your own goal" />
+          </div>
+          <div class="f" role="group" aria-labelledby="pagesL">
+            <span class="lbl" id="pagesL">Pages</span>
+            <div class="chips" data-group="pages">
+              <button type="button" class="chip" aria-pressed="false" data-v="auto">Auto (recommended)</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="1">1</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="2">2</button>
+              <button type="button" class="chip" aria-pressed="true" data-v="3">3</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="4">4</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="5">5</button>
+              <button type="button" class="chip" aria-pressed="false" data-v="6">6</button>
+            </div>
+            <input type="number" id="pagesOther" min="1" max="10" placeholder="Or type a number (1–10)" aria-label="Number of pages" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. data -->
+      <div class="box">
+        <div class="box-h"><span class="step">03</span><h2>Your data</h2><span class="opt">Optional, but it makes the story real</span></div>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload CSV or Excel files">
+          <b>Drop CSV or Excel files here, or click to choose</b>
+          <span class="hint">Several files at once · .csv .tsv .xlsx .xls · read in your browser, never uploaded anywhere</span>
+        </div>
+        <input type="file" id="fileIn" multiple accept=".csv,.tsv,.txt,.xlsx,.xls,.xlsm" hidden />
+        <div class="files" id="files" aria-live="polite"></div>
+        <div class="f">
+          <label for="fields">No files? List your columns instead <span class="hint">(optional)</span></label>
+          <textarea id="fields" placeholder="e.g. Date, Region, Store, Product, Revenue, Cost, Discount, Orders"></textarea>
+        </div>
+      </div>
+
+      <!-- 4. generate -->
+      <div class="box">
+        <div class="box-h"><span class="step">04</span><h2>Generate</h2></div>
+        <p class="hint">Runs instantly in your browser, with built-in story patterns for 19 common topics. Nothing is uploaded or sent anywhere. With data, the KPIs use your real totals; headlines are examples to rewrite with your findings.</p>
+        <div class="go">
+          <button type="submit" class="btn primary" id="genBtn">Generate wireframe</button>
+          <div class="status" id="status" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </form>
+
+    <section id="out" hidden aria-live="polite"></section>
+  </main>
+
+  <footer>
+    <div class="wrap">Built by Rashid Tobrazune Awudu Seidu · <a href="index.html#learn">More free resources</a> · Next step: style your report with my <a href="https://ai.studio/apps/92b810e1-ac95-4b34-8132-19ba5858b751" target="_blank" rel="noopener">Power BI Background &amp; Theme Generator ↗</a></div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <!-- pencil-line effect for the Sketch style -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <filter id="wf-rough"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" /><feDisplacementMap in="SourceGraphic" scale="2.6" /></filter>
+  </svg>
+
+  <script>
+    (function () {
+      'use strict';
+      const $ = s => document.querySelector(s);
+      const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const lc = s => s ? s.charAt(0).toLowerCase() + s.slice(1) : '';
+      const uc = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+      const plural = w => { const x = String(w).toLowerCase(); if (/(s|x|ch|sh)$/.test(x)) return x + 'es'; if (/[^aeiou]y$/.test(x)) return x.slice(0, -1) + 'ies'; return x + 's'; };
+      const clip = (s, n) => { s = String(s == null ? '' : s).trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+      const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ---------- settings ----------
+      const XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      const MAX_FILE_MB = 60;
+      const MAX_ROWS = 300000;
+
+      // ---------- theme toggle (shared with the portfolio) ----------
+      $('#themeBtn').addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('rt-theme', next); } catch (e) { }
+      });
+
+      // ---------- toast ----------
+      const toastEl = $('#toast');
+      let toastT;
+      const toast = m => { toastEl.textContent = m; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 2400); };
+
+      // ---------- chip groups: multi-select (audience, goal) and single-select (pages) ----------
+      document.querySelectorAll('.chips[data-group]').forEach(g => {
+        const multi = g.dataset.multi === '1';
+        g.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+          if (multi) c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
+          else {
+            g.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+            if (g.dataset.group === 'pages') $('#pagesOther').value = '';
+          }
+        }));
+      });
+      $('#pagesOther').addEventListener('input', () => {
+        if ($('#pagesOther').value) document.querySelectorAll('[data-group="pages"] .chip').forEach(x => x.setAttribute('aria-pressed', 'false'));
+      });
+      const picked = grp => Array.from(document.querySelectorAll(`[data-group="${grp}"] .chip[aria-pressed="true"]`)).map(c => ({ v: c.dataset.v, label: c.textContent.trim() }));
+
+      // example chips only fill the topic; nothing is generated until you press the button
+      document.querySelectorAll('.chip.ex').forEach(c => c.addEventListener('click', () => { $('#topic').value = c.textContent.trim(); $('#topic').focus(); }));
+
+      // ======================================================================
+      //  DATA: read CSV / Excel files in the browser and profile them
+      // ======================================================================
+      const tables = [];   // { id, file, name, rows, columns[], sample[], yearly{} }
+      let tableSeq = 0;
+
+      function loadScript(src) {
+        return new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = src; s.onload = res; s.onerror = () => rej(new Error('Could not load ' + src));
+          document.head.append(s);
+        });
+      }
+      async function ensureXLSX() { if (!window.XLSX) await loadScript(XLSX_URL); }
+
+      const DATE_STR = /^(\d{4}-\d{1,2}-\d{1,2})([ T]\d{1,2}:\d{2}(:\d{2})?)?$|^\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}$/;
+      const NUM_STR = /^-?[\d,]*\.?\d+%?$/;
+      const isDate = v => Object.prototype.toString.call(v) === '[object Date]';
+      function cellKind(v) {
+        if (v === null || v === undefined || v === '') return null;
+        if (isDate(v)) return isNaN(v.getTime()) ? null : 'date';
+        if (typeof v === 'number') return isFinite(v) ? 'number' : null;
+        if (typeof v === 'boolean') return 'boolean';
+        const s = String(v).trim();
+        if (!s) return null;
+        if (NUM_STR.test(s)) return 'number';
+        if (DATE_STR.test(s) && !isNaN(Date.parse(s.replace(/\//g, '-')))) return 'date';
+        return 'text';
+      }
+      const toNum = v => typeof v === 'number' ? v : parseFloat(String(v).replace(/[,%]/g, ''));
+      const toDate = v => isDate(v) ? v : new Date(String(v).replace(/\//g, '-'));
+      const ID_NAME = /(^|[\s_])(id|key|code|no|number|zip|phone|postcode)$|^id$/i;
+
+      function profileTable(name, rows) {
+        rows = rows.slice(0, MAX_ROWS);
+        const names = Object.keys(rows[0] || {}).slice(0, 80);
+        const cols = names.map(n => {
+          const c = { name: String(n).trim() || 'Column', type: 'text', missing: 0, distinct: 0 };
+          const kinds = { number: 0, date: 0, text: 0, boolean: 0 };
+          const seen = new Map();
+          let sum = 0, min = Infinity, max = -Infinity, cnt = 0, dmin = Infinity, dmax = -Infinity;
+          for (const r of rows) {
+            const v = r[n];
+            const k = cellKind(v);
+            if (!k) { c.missing++; continue; }
+            kinds[k]++;
+            const key = isDate(v) ? v.toISOString().slice(0, 10) : String(v);
+            if (seen.size < 20000) seen.set(key, (seen.get(key) || 0) + 1);
+            if (k === 'number') { const x = toNum(v); if (isFinite(x)) { sum += x; cnt++; if (x < min) min = x; if (x > max) max = x; } }
+            if (k === 'date') { const t = toDate(v).getTime(); if (isFinite(t)) { if (t < dmin) dmin = t; if (t > dmax) dmax = t; } }
+          }
+          const filled = rows.length - c.missing;
+          const top = Object.entries(kinds).sort((a, b) => b[1] - a[1])[0];
+          c.type = filled === 0 ? 'text' : (top[1] / filled >= 0.9 ? top[0] : 'text');
+          c.distinct = seen.size;
+          if (c.type === 'number' && cnt) { c.sum = sum; c.mean = sum / cnt; c.min = min; c.max = max; }
+          if (c.type === 'date' && isFinite(dmin)) { c.from = new Date(dmin).toISOString().slice(0, 10); c.to = new Date(dmax).toISOString().slice(0, 10); }
+          if (c.type === 'text' || c.type === 'boolean') c.top = Array.from(seen.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([v, n2]) => [clip(v, 40), n2]);
+          c.isId = (ID_NAME.test(c.name) && c.distinct >= filled * 0.9) || (c.type !== 'number' && filled > 20 && c.distinct === filled && /id|key|code/i.test(c.name));
+          return c;
+        });
+        // yearly totals of numeric columns, using the first date column
+        const dcol = cols.find(c => c.type === 'date');
+        const nums = cols.filter(c => c.type === 'number' && !c.isId && !/year|month|day|week|quarter/i.test(c.name)).slice(0, 8);
+        const yearly = {};
+        if (dcol && nums.length) {
+          for (const r of rows) {
+            const dv = r[names[cols.indexOf(dcol)]];
+            if (!cellKind(dv)) continue;
+            const y = toDate(dv).getFullYear();
+            if (!isFinite(y)) continue;
+            yearly[y] = yearly[y] || { rows: 0 };
+            yearly[y].rows++;
+            nums.forEach(c => { const x = toNum(r[names[cols.indexOf(c)]]); if (isFinite(x)) yearly[y][c.name] = (yearly[y][c.name] || 0) + x; });
+          }
+        }
+        const sample = rows.slice(0, 5).map(r => Object.fromEntries(names.slice(0, 30).map(n => [String(n), isDate(r[n]) ? r[n].toISOString().slice(0, 10) : clip(r[n], 40)])));
+        return { name, rows: rows.length, columns: cols, sample, yearly, dateCol: dcol ? dcol.name : null };
+      }
+
+      async function readFile(file) {
+        if (file.size > MAX_FILE_MB * 1024 * 1024) throw new Error(`${file.name} is larger than ${MAX_FILE_MB} MB`);
+        await ensureXLSX();
+        const buf = await file.arrayBuffer();
+        const isText = /\.(csv|tsv|txt)$/i.test(file.name);
+        const wb = window.XLSX.read(buf, { type: 'array', cellDates: true, raw: false, ...(isText ? { codepage: 65001 } : {}) });
+        const out = [];
+        wb.SheetNames.slice(0, 12).forEach(sn => {
+          const rows = window.XLSX.utils.sheet_to_json(wb.Sheets[sn], { defval: null, raw: true });
+          if (rows.length) out.push(profileTable(wb.SheetNames.length > 1 ? `${file.name} › ${sn}` : file.name, rows));
+        });
+        if (!out.length) throw new Error(`${file.name} has no rows we could read`);
+        return out;
+      }
+
+      const typeIcon = { number: '#', date: '◷', text: 'Aa', boolean: '✓' };
+      function drawFiles(errors) {
+        const box = $('#files');
+        box.innerHTML = tables.map(t => `<div class="file"><div><div class="fn">${esc(t.name)}</div>
+            <div class="fm">${t.rows.toLocaleString()} rows · ${t.columns.length} columns${t.dateCol ? ' · dates ' + esc(t.columns.find(c => c.name === t.dateCol).from || '') + ' to ' + esc(t.columns.find(c => c.name === t.dateCol).to || '') : ''}</div></div>
+            <button type="button" class="x" data-rm="${t.id}" aria-label="Remove ${esc(t.name)}">Remove</button>
+            <div class="cols">${t.columns.map(c => `<span class="col" title="${esc(c.type)}${c.isId ? ', ID' : ''}"><i>${typeIcon[c.type] || ''}</i>${esc(c.name)}</span>`).join('')}</div></div>`).join('')
+          + (errors || []).map(e => `<p class="err">${esc(e)}</p>`).join('');
+        box.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+          const i = tables.findIndex(t => String(t.id) === b.dataset.rm);
+          if (i >= 0) tables.splice(i, 1);
+          drawFiles();
+        }));
+      }
+
+      async function addFiles(list) {
+        const files = Array.from(list || []);
+        if (!files.length) return;
+        const errors = [];
+        setStatus(`Reading ${files.length} file${files.length > 1 ? 's' : ''}…`, true);
+        for (const f of files) {
+          try { (await readFile(f)).forEach(t => tables.push(Object.assign(t, { id: ++tableSeq, file: f.name }))); }
+          catch (e) { errors.push(e.message || `Could not read ${f.name}`); }
+        }
+        setStatus('');
+        drawFiles(errors);
+      }
+
+      const drop = $('#drop'), fileIn = $('#fileIn');
+      drop.addEventListener('click', () => fileIn.click());
+      drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileIn.click(); } });
+      fileIn.addEventListener('change', () => { addFiles(fileIn.files); fileIn.value = ''; });
+      ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+      ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+      drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+
+      // relationships: a column name shared by two tables, unique on one side
+      function relationships() {
+        const rel = [];
+        for (let i = 0; i < tables.length; i++) for (let j = 0; j < tables.length; j++) {
+          if (i === j) continue;
+          tables[i].columns.forEach(a => {
+            const b = tables[j].columns.find(x => x.name.toLowerCase() === a.name.toLowerCase());
+            if (!b) return;
+            const aUnique = a.distinct >= (tables[i].rows - a.missing) * 0.99 && tables[i].rows > 1;
+            const bUnique = b.distinct >= (tables[j].rows - b.missing) * 0.99;
+            if (aUnique && !bUnique) rel.push({ one: tables[i].name, many: tables[j].name, column: a.name });
+          });
+        }
+        return rel.slice(0, 20);
+      }
+
+      // ======================================================================
+      //  STORY ENGINE: built-in story patterns
+      // ======================================================================
+      const D = (id, name, re, dims, kpis, story, drivers, actions) => ({ id, name, re, dims, kpis, story, drivers, actions });
+      const DOMAINS = [
+        D('hotel', 'Hospitality', 'hotel|hospitality|booking|guest|occupanc|room|resort|airbnb|lodg',
+          ['Hotel', 'Booking channel', 'Region', 'Room type', 'Guest segment'],
+          [['Occupancy', '79%', 'up from 67% last year'], ['Revenue per room', '$86', '+4% vs last year'], ['Booking-site share', '50%', 'up from 33%', 1], ['Guest loyalty score', '3.3', 'down from 8.5', 1]],
+          ['Rooms are full, but guests are not coming back', 'Occupancy is up, yet booking sites now bring half of room revenue and repeat stays are falling.',
+            'Booking-site fees and slow check-in are pushing guests away', 'Hotels with the slowest check-in lost the most repeat guests, and booking-site fees eat into every room sold.',
+            'Win guests back with direct booking and faster check-in', 'Three projects recover booking fees and guest loyalty within the plan period.'],
+          [['bar', 'Repeat-stay rate by booking channel'], ['scatter', 'Check-in time vs guest score, by hotel'], ['waterfall', 'Where each $100 of room revenue goes']],
+          ['Direct-booking offer on our website', 'Self check-in kiosks in the slowest hotels', 'Loyalty programme for repeat guests']),
+        D('retail', 'Retail & sales', 'sales|retail|store|shop|sku|supermarket|revenue|product',
+          ['Region', 'Store', 'Product category', 'Customer segment', 'Sales channel'],
+          [['Revenue', '$4.2M', '+8% vs last year'], ['Gross margin', '31%', 'down from 36%', 1], ['Orders', '58.4K', '+11% vs last year'], ['Average discount', '18%', 'up from 11%', 1]],
+          ['Sales are growing, but we keep less of every sale', 'Revenue rose 8%, yet margin fell five points as discounts climbed.',
+            'Deep discounts in two regions explain most of the margin loss', 'Stores discounting above 20% sold more units but earned less profit per order.',
+            'Cap discounts and protect margin without losing customers', 'A 15% discount cap and targeted promotions recover most of the lost margin.'],
+          [['bar', 'Margin by discount band'], ['scatter', 'Discount vs margin, by store'], ['decomp', 'What drives the margin drop']],
+          ['Cap standard discounts at 15%', 'Targeted promotions for price-sensitive segments', 'Weekly margin alert for store managers']),
+        D('ecom', 'E-commerce', 'e-?commerce|online shop|website|web shop|checkout|cart|conversion|app store|mobile app',
+          ['Traffic source', 'Device', 'Product category', 'Country', 'New vs returning'],
+          [['Sessions', '1.2M', '+15% vs last year'], ['Conversion rate', '1.8%', 'down from 2.4%', 1], ['Average order value', '$64', '+3% vs last year'], ['Cart abandonment', '74%', 'up from 68%', 1]],
+          ['More visitors, fewer buyers', 'Traffic grew 15%, but conversion fell and three in four carts are abandoned.',
+            'A slow mobile checkout is losing buyers at the final step', 'Mobile visitors drop off at payment far more often than desktop visitors.',
+            'Fix mobile checkout first: it is the biggest leak', 'A shorter checkout and more payment options recover a large share of abandoned carts.'],
+          [['funnel', 'Visitor funnel: view → cart → checkout → paid'], ['bar', 'Conversion rate by device'], ['line', 'Page load time vs conversion, by week']],
+          ['One-page mobile checkout', 'Add mobile money and wallet payments', 'Abandoned-cart reminder emails']),
+        D('marketing', 'Marketing', 'marketing|campaign|advert|\\bads?\\b|social media|leads?\\b|seo|email|ctr|impression',
+          ['Channel', 'Campaign', 'Audience segment', 'Region', 'Creative'],
+          [['Spend', '$820K', '+20% vs last year'], ['Leads', '14.6K', '+6% vs last year'], ['Cost per lead', '$56', 'up from $47', 1], ['Return on ad spend', '2.1x', 'down from 3.0x', 1]],
+          ['We are spending more, but each lead costs more', 'Spend rose 20% while leads grew only 6%, so return on ad spend fell.',
+            'Two channels take a third of the budget but bring few customers', 'Paid social and display drive clicks, not customers; search and email convert best.',
+            'Move budget to the channels that bring customers', 'Shifting a quarter of spend to search and email keeps leads steady at lower cost.'],
+          [['bar', 'Return on ad spend by channel'], ['scatter', 'Spend vs customers won, by campaign'], ['funnel', 'Impressions → clicks → leads → customers']],
+          ['Move 25% of budget from display to search', 'Pause the five weakest campaigns', 'Test new creative with the best audience']),
+        D('finance', 'Finance & budget', 'financ|budget|expense|\\bcosts?\\b|profit|p&l|accounting|cash|variance|spend',
+          ['Department', 'Cost category', 'Business unit', 'Supplier', 'Project'],
+          [['Revenue', '$12.8M', 'on plan'], ['Operating costs', '$10.9M', '6% over budget', 1], ['Operating margin', '15%', 'down from 19%', 1], ['Cash runway', '14 months', 'down from 18']],
+          ['Revenue is on plan, but costs are running ahead of it', 'Operating costs are 6% over budget, cutting margin by four points.',
+            'Contractor and software costs explain most of the overspend', 'Three cost categories in two departments account for most of the variance.',
+            'Bring costs back to budget within two quarters', 'Renegotiating software contracts and capping contractor hours closes most of the gap.'],
+          [['waterfall', 'Budget to actual: where the variance comes from'], ['bar', 'Variance by cost category'], ['matrix', 'Department × cost category variance']],
+          ['Renegotiate the top 5 software contracts', 'Cap contractor hours per department', 'Monthly budget review with budget owners']),
+        D('hr', 'HR & people', '\\bhr\\b|employee|attrition|turnover|staff|workforce|hiring|recruit|retention|people analytics|diversity|headcount|salary',
+          ['Department', 'Job level', 'Tenure band', 'Manager', 'Location'],
+          [['Headcount', '1,240', '+3% vs last year'], ['Attrition rate', '18%', 'up from 12%', 1], ['Time to hire', '46 days', 'up from 34', 1], ['Engagement score', '68', 'down from 74']],
+          ['We are hiring, but losing people faster than ever', 'Attrition rose from 12% to 18%, and open roles now take 46 days to fill.',
+            'Most leavers are early-career staff in two departments', 'People in their first two years leave at twice the average rate, often after a low pay review.',
+            'Keep early-career talent with pay, growth and better managers', 'Targeted pay reviews and mentoring address the main reasons people leave.'],
+          [['bar', 'Attrition rate by tenure band'], ['matrix', 'Attrition by department × job level'], ['scatter', 'Engagement vs attrition, by team']],
+          ['Pay review for early-career roles', 'Mentoring programme for new hires', 'Manager training in the two weakest departments']),
+        D('health', 'Healthcare', 'health|hospital|patient|clinic|medical|disease|nurse|doctor|malaria|wait time|emergency|maternal',
+          ['Facility', 'Department', 'District', 'Age group', 'Visit type'],
+          [['Patient visits', '182K', '+9% vs last year'], ['Average wait time', '3.4 hrs', 'up from 2.1', 1], ['Bed occupancy', '93%', 'above the 85% safe level', 1], ['Readmission rate', '11%', 'down from 13%']],
+          ['Demand is rising faster than our capacity', 'Visits grew 9%, waits rose to 3.4 hours and beds run above the safe level.',
+            'Three facilities and evening hours cause most of the delays', 'Waits peak between 5 and 9 pm, when staffing is lowest and referrals arrive.',
+            'Match staff to demand and spread the load', 'Moving staff to evening peaks and redirecting minor cases cuts waits the most.'],
+          [['column', 'Average wait by hour of day'], ['map', 'Wait time by facility'], ['bar', 'Visits by visit type, vs capacity']],
+          ['Move staff shifts to the evening peak', 'Triage desk for minor cases', 'Referral agreements with nearby clinics']),
+        D('education', 'Education', 'school|student|education|exam|learning|universit|enrol|teacher|grade|pupil|literacy',
+          ['School', 'District', 'Grade', 'Subject', 'Gender'],
+          [['Students enrolled', '24.5K', '+4% vs last year'], ['Pass rate', '61%', 'down from 68%', 1], ['Attendance', '84%', 'down from 90%', 1], ['Pupil–teacher ratio', '42:1', 'up from 35:1']],
+          ['More students, but fewer are passing', 'Enrolment grew 4%, while pass rates and attendance both fell.',
+            'Large classes and low attendance explain most of the drop', 'Schools with more than 45 pupils per teacher saw the steepest fall in pass rates.',
+            'Put teachers and support where classes are largest', 'Redeploying teachers and an attendance programme target the schools that need it most.'],
+          [['scatter', 'Class size vs pass rate, by school'], ['bar', 'Pass rate by subject'], ['map', 'Attendance by district']],
+          ['Redeploy teachers to the most crowded schools', 'Attendance follow-up programme', 'Extra classes in maths and science']),
+        D('logistics', 'Logistics & fleet', 'logistic|fleet|deliver|transport|shipping|supply chain|warehouse|truck|vehicle|freight|inventory|route|trip',
+          ['Route', 'Vehicle', 'Driver', 'Depot', 'Customer region'],
+          [['Deliveries', '7,110', '+12% vs last year'], ['On-time rate', '82%', 'down from 91%', 1], ['Cost per delivery', '$38', 'up from $33', 1], ['Fleet utilisation', '71%', 'flat on last year']],
+          ['We deliver more, but later and at higher cost', 'Deliveries rose 12%, but on-time performance fell and each trip costs more.',
+            'Overdue maintenance and three routes cause most of the delays', 'Vehicles past their service date break down more and run late on long routes.',
+            'Fix maintenance first, then re-plan the worst routes', 'A maintenance schedule and route changes recover most late trips and costs.'],
+          [['bar', 'Late trips by route'], ['scatter', 'Days since service vs breakdowns, by vehicle'], ['gantt', 'Maintenance schedule by vehicle']],
+          ['Service every overdue vehicle within 30 days', 'Re-plan the three latest routes', 'Driver scorecards for on-time delivery']),
+        D('transit', 'Public transport', '\\bbus(es)?\\b|ridership|passenger|transit|metro|\\brail|train|commut|trotro|ferry',
+          ['Route', 'Station', 'Time of day', 'Day of week', 'Ticket type'],
+          [['Passenger trips', '2.8M', '+7% vs last year'], ['On-time departures', '71%', 'down from 84%', 1], ['Average crowding', '118%', 'of seated capacity at peak', 1], ['Fare revenue', '$6.1M', '+5% vs last year']],
+          ['More people ride, but buses run late and full', 'Trips grew 7%, yet on-time departures fell and peak buses run well over capacity.',
+            'A few busy routes at peak hours cause most delays and crowding', 'Peak-hour trips on five routes carry a third of passengers and account for most late departures.',
+            'Add peak capacity where it is needed most', 'More peak buses on five routes and priority lanes on two corridors cut delays and crowding.'],
+          [['column', 'Passengers by hour of day'], ['bar', 'Late departures by route'], ['scatter', 'Crowding vs delay, by route']],
+          ['Extra peak-hour buses on the five busiest routes', 'Bus priority lanes on two corridors', 'Real-time arrival information at stops']),
+        D('service', 'Customer service', 'customer service|call cent|support|ticket|complaint|helpdesk|contact cent|satisfaction|\\bnps\\b|csat',
+          ['Channel', 'Issue type', 'Team', 'Agent', 'Product'],
+          [['Tickets', '46K', '+18% vs last year'], ['First-response time', '9.5 hrs', 'up from 4', 1], ['Resolved first time', '63%', 'down from 72%', 1], ['Customer satisfaction', '3.9 / 5', 'down from 4.3']],
+          ['More customers need help, and they wait longer for it', 'Tickets rose 18% and first-response time more than doubled.',
+            'Billing questions drive the growth, and most could be self-served', 'Billing tickets doubled after the new invoice format, and most are simple questions.',
+            'Answer billing questions before customers ask', 'A clearer invoice and a self-service FAQ remove the biggest source of tickets.'],
+          [['bar', 'Tickets by issue type'], ['line', 'Response time by week, vs target'], ['scatter', 'Response time vs satisfaction, by team']],
+          ['Redesign the invoice', 'Self-service billing FAQ and chatbot', 'Route billing tickets to a specialist team']),
+        D('churn', 'Subscriptions & churn', 'churn|subscri|telecom|retention|\\bbank|account|insurance|saas|cancel|renewal',
+          ['Plan', 'Tenure band', 'Region', 'Payment method', 'Acquisition channel'],
+          [['Active customers', '212K', '+2% vs last year'], ['Monthly churn', '3.1%', 'up from 2.2%', 1], ['Revenue per customer', '$24', 'flat on last year'], ['Customer lifetime value', '$540', 'down from $690', 1]],
+          ['We win customers, but lose them faster', 'Churn rose from 2.2% to 3.1% a month, cutting lifetime value by a fifth.',
+            'New customers on monthly plans leave in their first 90 days', 'Churn is highest in the first three months, especially right after the first bill.',
+            'Protect the first 90 days', 'An onboarding journey and annual-plan offers target the customers most likely to leave.'],
+          [['line', 'Customers remaining by month since joining (cohorts)'], ['bar', 'Churn rate by plan'], ['decomp', 'What drives churn']],
+          ['90-day onboarding journey', 'Discount for switching to an annual plan', 'Churn-risk list for the retention team']),
+        D('manufacturing', 'Manufacturing', 'manufactur|production|factory|plant|machine|defect|quality|downtime|\\boee\\b|assembly',
+          ['Line', 'Machine', 'Shift', 'Product', 'Plant'],
+          [['Units produced', '1.9M', '+5% vs last year'], ['OEE', '64%', 'down from 72%', 1], ['Defect rate', '3.8%', 'up from 2.1%', 1], ['Unplanned downtime', '410 hrs', 'up from 250']],
+          ['Output is up, but quality and uptime are slipping', 'We produced 5% more, while defects nearly doubled and downtime grew.',
+            'Two ageing machines cause most of the downtime and defects', 'Defects spike on night shifts on two lines, after missed maintenance.',
+            'Fix the two worst machines before adding capacity', 'Predictive maintenance on two machines recovers most of the lost uptime.'],
+          [['bar', 'Downtime hours by machine (Pareto)'], ['matrix', 'Defect rate by line × shift'], ['line', 'Defect rate by week']],
+          ['Overhaul the two worst machines', 'Predictive maintenance alerts', 'Night-shift quality checks']),
+        D('nonprofit', 'Non-profit & fundraising', 'non-?profit|\\bngo\\b|donat|donor|charity|fundrais|grant|volunteer|beneficiar',
+          ['Campaign', 'Donor type', 'Region', 'Programme', 'Channel'],
+          [['Funds raised', '$2.6M', '+7% vs last year'], ['Donor retention', '41%', 'down from 52%', 1], ['Average gift', '$86', '+10% vs last year'], ['Cost per beneficiary', '$34', 'down from $39']],
+          ['We raise more, but keep fewer donors', 'Funds rose 7%, but fewer than half of last year’s donors gave again.',
+            'First-time donors rarely hear from us after their first gift', 'Donors who received an impact update were twice as likely to give again.',
+            'Show donors their impact, and they will stay', 'A thank-you and impact journey for new donors targets the biggest loss.'],
+          [['bar', 'Retention by donor type'], ['line', 'Repeat giving by months since first gift'], ['scatter', 'Contacts per donor vs repeat-gift rate']],
+          ['Impact update within 30 days of every first gift', 'Monthly giving option', 'Donor stories on social media']),
+        D('restaurant', 'Restaurants & food', 'restaurant|food|menu|cafe|café|coffee|kitchen|dining|\\bbar\\b|dish',
+          ['Branch', 'Menu category', 'Day of week', 'Hour', 'Order type'],
+          [['Revenue', 'GH₵1.24M', '+9% vs last year'], ['Orders', '9,132', '+6% vs last year'], ['Food cost', '38%', 'up from 31%', 1], ['Average order', 'GH₵136', '+3% vs last year']],
+          ['Busy kitchens, thinner margins', 'Orders and revenue are up, but food costs now take 38% of every sale.',
+            'A few popular dishes cost far more to make than they earn', 'Five best-sellers carry the highest food cost and the lowest margin.',
+            'Re-price or re-engineer the five costly favourites', 'Menu changes on five dishes bring food cost back to target.'],
+          [['scatter', 'Menu engineering: popularity vs margin, by dish'], ['column', 'Orders by hour of day'], ['bar', 'Food cost by menu category']],
+          ['Re-price the five costly best-sellers', 'Adjust portions or ingredients where possible', 'Promote high-margin dishes']),
+        D('energy', 'Energy & utilities', 'energy|electric|\\bpower\\b|utilit|\\bwater\\b|solar|consumption|grid|meter',
+          ['Region', 'Customer type', 'Feeder', 'Tariff', 'Meter type'],
+          [['Energy delivered', '1,840 GWh', '+4% vs last year'], ['Losses', '24%', 'up from 19%', 1], ['Collection rate', '78%', 'down from 85%', 1], ['Outage hours per customer', '36', 'up from 28']],
+          ['We supply more energy, but lose and collect less of it', 'A quarter of energy is lost before it is billed, and collections are falling.',
+            'Losses concentrate on a few feeders with old meters', 'Feeders with the oldest meters have twice the losses and the lowest collections.',
+            'Smart meters on the worst feeders pay for themselves', 'Replacing meters on the 20 worst feeders recovers most losses within two years.'],
+          [['map', 'Losses by feeder area'], ['bar', 'Losses by meter age band'], ['scatter', 'Losses vs collection rate, by feeder']],
+          ['Smart meters on the 20 worst feeders', 'Prepaid meters for high-arrears customers', 'Monthly loss review per feeder']),
+        D('agri', 'Agriculture', 'agri|crop|farm|harvest|yield|cocoa|maize|livestock|rainfall|irrigat',
+          ['District', 'Crop', 'Farm size', 'Season', 'Cooperative'],
+          [['Total harvest', '312K t', '−6% vs last year'], ['Yield per hectare', '1.4 t', 'down from 1.7', 1], ['Farmers reached', '18.2K', '+12% vs last year'], ['Post-harvest loss', '21%', 'up from 15%', 1]],
+          ['More farmers, smaller harvests', 'We reach more farmers, but yields fell and a fifth of the harvest is lost after picking.',
+            'Late rains and poor storage explain most of the loss', 'Districts with late rains and no storage lost the most.',
+            'Storage and drought-tolerant seed where the risk is highest', 'Targeting the worst districts recovers the largest share of lost harvest.'],
+          [['map', 'Yield by district'], ['scatter', 'Rainfall vs yield, by district'], ['bar', 'Post-harvest loss by storage type']],
+          ['Community storage in the 10 worst districts', 'Drought-tolerant seed programme', 'SMS weather alerts for farmers']),
+        D('property', 'Real estate', 'real estate|propert|housing|rent|tenant|mortgage|house price|landlord',
+          ['Neighbourhood', 'Property type', 'Bedrooms', 'Agent', 'Price band'],
+          [['Units managed', '3,420', '+5% vs last year'], ['Occupancy', '88%', 'down from 94%', 1], ['Average rent', '$1,150', '+6% vs last year'], ['Arrears', '9%', 'up from 5%', 1]],
+          ['Rents are rising, but more units sit empty', 'Average rent grew 6%, while occupancy fell and arrears nearly doubled.',
+            'Overpriced units in three neighbourhoods stay empty longest', 'Units priced above the local median take three times longer to let.',
+            'Price to the market and fill empty units faster', 'Adjusting asking rents in three areas fills units sooner and earns more overall.'],
+          [['map', 'Days vacant by neighbourhood'], ['scatter', 'Rent vs local median, by unit'], ['bar', 'Arrears by property type']],
+          ['Re-price the slowest-letting units', 'Faster repairs between tenants', 'Early follow-up on arrears']),
+        D('sports', 'Sports', 'sport|football|soccer|match|player|team performance|league|athlete|goal',
+          ['Player', 'Position', 'Opponent', 'Home vs away', 'Season'],
+          [['Points', '52', '−8 vs last season'], ['Goals scored', '48', '+3 vs last season'], ['Goals conceded', '44', 'up from 31', 1], ['Expected goals against', '1.6 / match', 'up from 1.1', 1]],
+          ['We score enough, but concede too many', 'Attack improved, yet we conceded 13 more goals than last season.',
+            'Most goals against come from set pieces and late in matches', 'Over half of goals conceded came after the 70th minute or from set pieces.',
+            'Fix set-piece defence and late-game fitness', 'Set-piece coaching and smarter substitutions target the biggest leak.'],
+          [['column', 'Goals conceded by 15-minute period'], ['bar', 'Goals conceded by type'], ['scatter', 'Minutes played vs sprint distance, by player']],
+          ['Dedicated set-piece coaching', 'Earlier substitutions after the 65th minute', 'Fitness plan for key defenders'])
+      ];
+
+      const MEASURE_RE = /amount|revenue|sales|cost|profit|price|qty|quantity|count|number|total|rate|score|percent|%|margin|duration|days|hours|minutes|value|spend|budget|income|salary|volume|units|visits|bookings|orders|calls|cases|tickets|weight|yield|distance|km|temperature|rainfall|population|attendance|wait|fee|discount|tax|balance|loss|clicks|impressions|leads|sessions|goals|points/i;
+      const TIME_RE = /date|month|year|week|\bday\b|period|quarter|timestamp/i;
+      const GEO_RE = /region|district|country|city|state|province|neighbourhood|neighborhood|location|area|feeder|county|zone|town/i;
+      const AVG_RE = /rate|score|%|percent|avg|average|price|age|ratio|margin|satisfaction|rating|temperature|duration|wait|time/i;
+      const BAD_UP_RE = /cost|time|wait|defect|churn|loss|complaint|delay|attrition|abandon|arrears|downtime|expense|debt|error|late/i;
+
+      function parseFields(s) {
+        const all = (s || '').split(/[,;\n|]+/).map(x => x.trim()).filter(Boolean).slice(0, 30);
+        const measures = [], dims = [];
+        let time = null;
+        all.forEach(f => {
+          const name = uc(f.replace(/_+/g, ' ').replace(/\s+/g, ' '));
+          if (TIME_RE.test(name) && !/rate|count|hours|days|minutes/i.test(name)) { if (!time) time = name; }
+          else if (GEO_RE.test(name)) dims.push(name);
+          else if (MEASURE_RE.test(name) && !/\bid\b|code|name|type|category|status/i.test(name)) measures.push(name);
+          else if (!/\bid\b$/i.test(name)) dims.push(name);
+        });
+        return { measures, dims, time, count: all.length };
+      }
+
+      function pickDomain(topic, fields) {
+        let best = null, score = 0;
+        DOMAINS.forEach(d => {
+          const re = new RegExp(d.re, 'gi');
+          const n = 2 * (topic.match(re) || []).length + (fields.match(re) || []).length;
+          if (n > score) { score = n; best = d; }
+        });
+        return best;
+      }
+
+      const cleanTopic = t => t.replace(/power\s*bi/gi, ' ').replace(/\b(dashboard|report|analysis|analytics|dataset|data set|data|insights?)\b/gi, ' ').replace(/\s+/g, ' ').trim() || t.trim();
+
+      const fmt = (x, pct) => {
+        if (!isFinite(x)) return '—';
+        if (pct) return (Math.abs(x) <= 1.5 ? x * 100 : x).toFixed(1) + '%';
+        const a = Math.abs(x);
+        if (a >= 1e9) return (x / 1e9).toFixed(1) + 'B';
+        if (a >= 1e6) return (x / 1e6).toFixed(1) + 'M';
+        if (a >= 1e4) return (x / 1e3).toFixed(1) + 'K';
+        return a >= 100 ? Math.round(x).toLocaleString() : Number(x.toFixed(2)).toLocaleString();
+      };
+
+      // KPIs, breakdowns and time column from the uploaded data
+      function fromData() {
+        if (!tables.length) return null;
+        const score = t => t.columns.filter(c => c.type === 'number' && !c.isId).length * 10 + (t.dateCol ? 5 : 0) + Math.log10(t.rows + 1);
+        const fact = tables.slice().sort((a, b) => score(b) - score(a))[0];
+        const meas = fact.columns.filter(c => c.type === 'number' && !c.isId && !/year|month|day|week|quarter|lat|lon|latitude|longitude/i.test(c.name))
+          .sort((a, b) => (MEASURE_RE.test(b.name) ? 1 : 0) - (MEASURE_RE.test(a.name) ? 1 : 0)).slice(0, 4);
+        const years = Object.keys(fact.yearly).map(Number).sort((a, b) => a - b);
+        const [y0, y1] = years.length >= 2 ? years.slice(-2) : [null, null];
+        const kpis = meas.map(c => {
+          const avg = AVG_RE.test(c.name);
+          const isPct = /%|percent|rate/i.test(c.name) && c.max <= 100;
+          const v = avg ? c.mean : c.sum;
+          let cmp = avg ? 'average across ' + fact.rows.toLocaleString() + ' rows' : 'total of ' + fact.rows.toLocaleString() + ' rows', change = null;
+          if (y0 && !avg && fact.yearly[y0][c.name]) {
+            change = (fact.yearly[y1][c.name] - fact.yearly[y0][c.name]) / Math.abs(fact.yearly[y0][c.name]);
+            cmp = `${y1}: ${change >= 0 ? '+' : ''}${(change * 100).toFixed(1)}% vs ${y0}`;
+          }
+          return { name: c.name, value: fmt(v, isPct), comparison: cmp, change, badUp: BAD_UP_RE.test(c.name), table: fact.name, agg: avg ? 'AVERAGE' : 'SUM' };
+        });
+        // the problem metric: biggest move in the wrong direction
+        let worst = null, worstScore = 0;
+        kpis.forEach(k => { if (k.change == null) return; const s = k.badUp ? k.change : -k.change; if (s > worstScore) { worstScore = s; worst = k; } });
+        kpis.forEach(k => k.isProblem = k === worst);
+        const all = tables.flatMap(t => t.columns.map(c => ({ c, t })));
+        const dims = all.filter(({ c }) => (c.type === 'text' || c.type === 'boolean') && !c.isId && c.distinct >= 2 && c.distinct <= 300)
+          .sort((a, b) => (GEO_RE.test(b.c.name) ? 1 : 0) - (GEO_RE.test(a.c.name) ? 1 : 0)).map(x => x.c.name)
+          .filter((n, i, arr) => arr.findIndex(m => m.toLowerCase() === n.toLowerCase()) === i).slice(0, 5);
+        return { fact, kpis, dims, time: fact.dateCol, years: y0 ? [y0, y1] : null };
+      }
+
+      function buildProfile(input) {
+        const fields = parseFields(input.fields);
+        const colText = tables.flatMap(t => t.columns.map(c => c.name)).join(' ');
+        const noPbi = s => s.replace(/power\s*bi/gi, ' ');
+        const d = pickDomain(noPbi(input.topic), noPbi(input.fields + ' ' + colText + ' ' + tables.map(t => t.name).join(' ')));
+        const subject = uc(cleanTopic(input.topic || (tables[0] ? tables[0].name.replace(/\.[a-z]+$/i, '') : 'Performance')));
+        let P;
+        if (d) {
+          P = {
+            matched: true, domain: d.name, subject, dims: d.dims.slice(),
+            kpis: d.kpis.map(k => ({ name: k[0], value: k[1], comparison: k[2], isProblem: !!k[3] })),
+            tension: d.story[0], tensionSub: d.story[1], cause: d.story[2], causeSub: d.story[3], fix: d.story[4], fixSub: d.story[5],
+            drivers: d.drivers.map(x => ({ t: x[0], title: x[1] })), actions: d.actions.slice()
+          };
+        } else {
+          const dims = ['Region', 'Category', 'Segment', 'Channel'];
+          P = {
+            matched: false, domain: 'General', subject, dims,
+            kpis: [{ name: 'Total ' + lc(subject), value: '12.4K', comparison: '+6% vs last year' }, { name: 'Growth vs last year', value: '+6%', comparison: 'down from +11%' },
+              { name: 'Average per ' + lc(dims[0]), value: '1.8K', comparison: 'range 0.6K–3.1K' }, { name: 'Share of target', value: '87%', comparison: 'below the 95% target', isProblem: true }],
+            tension: subject + ' is growing, but not everywhere', tensionSub: 'Totals are up on last year, but ' + plural(dims[0]) + ' perform very differently.',
+            cause: 'A few ' + plural(dims[0]) + ' explain most of the gap', causeSub: 'The bottom ' + plural(dims[0]) + ' share the same pattern in ' + lc(dims[1]) + ' and ' + lc(dims[2]) + '.',
+            fix: 'Focus first on the ' + plural(dims[0]) + ' with the biggest gap', fixSub: 'Three targeted actions close most of the gap to target.',
+            drivers: [{ t: 'bar', title: 'Share of target by ' + lc(dims[0]) }, { t: 'scatter', title: 'Size vs performance, by ' + lc(dims[0]) }, { t: 'decomp', title: 'What drives the gap to target' }],
+            actions: ['Action plan for the bottom three ' + plural(dims[0]), 'Share what the top ' + plural(dims[0]) + ' do differently', 'Monthly review of progress against target']
+          };
+        }
+        P.time = 'Month';
+        P.source = 'template';
+        // typed columns override the template
+        if (fields.time) P.time = fields.time;
+        if (fields.dims.length) P.dims = fields.dims.concat(P.dims).filter((x, i, a) => a.findIndex(y => y.toLowerCase() === x.toLowerCase()) === i).slice(0, 5);
+        if (fields.measures.length) {
+          const ms = fields.measures.slice(0, 4);
+          P.kpis = ms.map((m, i) => ({ name: m, value: ['12.4K', '31%', '$4.2M', '86'][i % 4], comparison: i === 1 ? 'down from 36% last year' : '+8% vs last year', isProblem: i === 1 }))
+            .concat(P.kpis.filter(k => !ms.some(m => m.toLowerCase() === k.name.toLowerCase()))).slice(0, 4);
+          P.source = 'columns';
+        }
+        // real data wins over everything
+        const real = fromData();
+        if (real) {
+          if (real.kpis.length) { P.kpis = real.kpis.slice(0, 4); P.source = 'data'; }
+          if (real.dims.length) P.dims = real.dims.concat(P.dims).filter((x, i, a) => a.findIndex(y => y.toLowerCase() === x.toLowerCase()) === i).slice(0, 5);
+          if (real.time) P.time = real.time;
+          P.real = real;
+        }
+        if (!P.kpis.some(k => k.isProblem)) P.kpis[Math.min(1, P.kpis.length - 1)].isProblem = true;
+        P.issue = P.kpis.find(k => k.isProblem) || P.kpis[0];
+        P.geo = P.dims.find(x => GEO_RE.test(x)) || null;
+        return P;
+      }
+
+      // audiences and goals: chips plus free text, mapped to the closest built-in style
+      const AUD = {
+        exec: { label: 'Executives / board', detail: 1, slicers: P => ['Year'], tips: ['Lead with the decision. Executives often read only the headline and the ask.', 'Keep each page to 3–4 visuals; detail goes into tooltips and drill-through.', 'Show money, risk and timing: what does the board get for its approval?'] },
+        manager: { label: 'Managers', detail: 2, slicers: P => ['Year', P.dims[0]], tips: ['Managers need to know where to act: break results down by the unit they manage.', 'Show comparisons to target and last year on every number.', 'Add a drill-through page so they can investigate their own area.'] },
+        analyst: { label: 'Analysts', detail: 3, slicers: P => ['Date range', P.dims[0], P.dims[1]], tips: ['Give more filters and a detail table, but keep the story at the top of each page.', 'Use a field parameter so users can switch the metric in the charts.', 'Document definitions in the “How we counted” note and a measures table.'] },
+        public: { label: 'General public', detail: 1, slicers: P => ['Year'], tips: ['Use plain words: no jargon and no abbreviations like YoY or KPI.', 'Annotate charts with the insight as a full sentence.', 'Use fewer visuals, larger text, and colours that work for colour-blind readers.'] }
+      };
+      const audFromText = t => /board|exec|director|ceo|cfo|investor|leadership|minister|trustee/i.test(t) ? 'exec' : /analyst|data team|scientist|engineer/i.test(t) ? 'analyst' : /public|citizen|community|donor|student|parent|media|press/i.test(t) ? 'public' : 'manager';
+      const goalFromText = t => /decid|approv|invest|budget|option|choose|business case|justify|forecast|plan/i.test(t) ? 'decide' : /monitor|track|kpi|performance|progress|scorecard|weekly|monthly/i.test(t) ? 'monitor' : 'explain';
+
+      const QUESTIONS = {
+        stand: 'Where do we stand today?', why: 'Why is it happening?', act: 'What should we do?',
+        overview: 'How are we performing?', breakdown: 'Where are we winning and losing?', exceptions: 'What needs attention now?',
+        situation: 'What is the situation?', options: 'What are our options?', recommend: 'What do we recommend?', onepage: 'What is happening, and what should we do?'
+      };
+      const PRIORITY = {
+        explain: ['stand', 'why', 'act', 'breakdown', 'exceptions', 'options'],
+        decide: ['situation', 'options', 'recommend', 'why', 'breakdown', 'exceptions'],
+        monitor: ['overview', 'exceptions', 'breakdown', 'why', 'act', 'options']
+      };
+      const ORDER = ['situation', 'stand', 'overview', 'breakdown', 'why', 'options', 'act', 'recommend', 'exceptions'];
+      function planPages(goal, n) {
+        if (n === 1) return [goal === 'monitor' ? 'overview' : 'onepage'];
+        return PRIORITY[goal].slice(0, Math.min(n, 6)).sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
+      }
+
+      const NOTE = {
+        header: 'The page asks one question out loud and answers it in the headline, so a reader who stops here still gets the story. The subtitle puts the key numbers into one sentence. Replace the sample headline with your real finding.',
+        filters: n => `Filters sit top-right, outside the reading path. Keep them few (${n}) so the page cannot be filtered into nonsense.`,
+        scenario: 'Let the audience test the plan with a Low / Expected / High switch. Showing the range moves the discussion to assumptions, not one number.',
+        kpis: 'Every KPI shows a comparison (last year or target), so the number has meaning. Only the problem metric uses the accent colour, so the eye lands on the issue first.',
+        impact: 'Show what the decision buys: cost, gain, payback and the honest risk. Boards trust reports that show the uncomfortable number.',
+        findings: 'State the “why” in plain sentences before the evidence. Each finding matches a chart, so the reader knows what to look for.',
+        reco: 'On a one-pager the recommendation sits next to its evidence: three numbered actions, nothing more.',
+        next: 'A “Next” link carries the story to the following page, so the report reads in order like a short presentation.',
+        ask: 'End with the decision you want, in one sentence: not “Questions?”, but exactly what should be approved.',
+        method: 'Small print for definitions, sources and last refresh. Nobody reads it until they disagree with a number; then it settles the argument.'
+      };
+      function chartWhy(t, P) {
+        const unit = lc(P.dims[0]);
+        return {
+          line: 'A line is the clearest way to show change over time. Show last year as a faint dashed line and label the latest point, so the trend needs no legend.',
+          area: 'An area chart shows the trend and its size together. Keep last year as a faint line for comparison.',
+          column: 'Columns by time slot make the peak obvious at a glance. Colour only the peak in the accent colour.',
+          bar: 'Sorted bars compare categories fastest. Highlight the one that needs attention in the accent colour and keep the rest grey.',
+          waterfall: 'A waterfall shows how a total is built up or broken down, step by step. It answers “where does it go?”.',
+          donut: 'Use a donut only for 2–4 parts of a whole, with the key figure in the centre. With more parts, use a bar chart.',
+          scatter: `A scatter shows the relationship between two numbers; each dot is one ${unit}. Label the outliers you talk about.`,
+          map: 'Use a map only when location is part of the answer. Colour by a rate, not a raw count, or big areas will always look worst.',
+          matrix: 'A matrix with conditional formatting works as a heatmap: the eye finds the hot cells immediately.',
+          gantt: 'A Gantt chart shows tasks over time, so overdue and overlapping work stands out.',
+          decomp: 'A decomposition tree lets readers drill into the cause themselves, one level at a time.',
+          funnel: 'A funnel shows where people drop out between steps. Highlight the step with the biggest loss.',
+          bullet: 'Bullet charts compare actual vs target in very little space, and work well in lists.',
+          scenario: 'Show the forecast as a range, not a single line. Low, Expected and High scenarios build trust.'
+        }[t] || '';
+      }
+      function chartBuild(t, P) {
+        const k0 = P.kpis[0].name, iss = P.issue.name, d0 = P.dims[0], d1 = P.dims[1] || P.dims[0], tm = P.time;
+        return {
+          line: `X: Date[${tm}] · Y: [${k0}], [${k0} LY] · data label on last point`,
+          area: `X: Date[${tm}] · Y: [${k0}] · secondary line: [${k0} LY]`,
+          column: `X: time slot · Y: [${iss}] · conditional colour on the maximum`,
+          bar: `Y: ${d0} · X: [${iss}] · sort descending · conditional colour on the worst`,
+          waterfall: `Category: steps (${d1}) · Y: [${k0}] · breakdown, sorted by size`,
+          donut: `Legend: ${d1} · Values: [${k0}] · max 4 slices, total in the centre`,
+          scatter: `X: [${k0}] · Y: [${iss}] · Values: ${d0} · trend line on`,
+          map: `Location: ${P.geo || d0} · Colour saturation: [${iss}] (a rate)`,
+          matrix: `Rows: ${d0} · Columns: ${d1} · Values: [${iss}] · background colour scale`,
+          gantt: `Task: ${d0} · Start/End dates · % complete · today line`,
+          decomp: `Analyse: [${iss}] · Explain by: ${P.dims.slice(0, 4).join(', ')}`,
+          funnel: 'Category: stage · Values: [count] · show % of first stage',
+          bullet: `Category: ${d0} · Value: [${iss}] · Target: [${iss} Target]`,
+          scenario: `X: Date[${tm}] · Y: [${k0} Forecast] · band: [Low], [High] · Scenario slicer`
+        }[t] || '';
+      }
+
+      // builds the plan: pages, layout, notes and the presenter script
+      function quickPlan(input) {
+        const P = buildProfile(input);
+        const audKeys = input.audChips.map(a => a.v).concat(input.audOther ? [audFromText(input.audOther)] : []);
+        const goalKeys = input.goalChips.map(g => g.v).concat(input.goalOther ? [goalFromText(input.goalOther)] : []);
+        const audKey = audKeys.includes('analyst') ? 'analyst' : audKeys[0] || 'manager';
+        const A = AUD[audKey];
+        const goal = goalKeys[0] || 'explain';
+        const n = input.pages === 'auto' ? 3 : Math.max(1, Math.min(6, input.pages));
+        const types = planPages(goal, n);
+        const d0 = P.dims[0], d1 = P.dims[1] || P.dims[0];
+        const ch = t => ({ chartType: t, title: '', why: chartWhy(t, P), build: chartBuild(t, P) });
+        const kp = k => ({ name: k.name, value: k.value, comparison: k.comparison, isProblem: !!k.isProblem });
+        const drill = 'Detail: right-click any ' + lc(d0) + ' to drill through →';
+
+        const pages = types.map((type, i) => {
+          const next = i < types.length - 1 ? 'Next: ' + QUESTIONS[types[i + 1]].toLowerCase() + ' →' : drill;
+          const ask = 'We ask you to approve: ' + P.actions.map(lc).join('; ') + '.';
+          const filters = A.slicers(P).filter(Boolean);
+          const pg = { layout: 'overview', question: QUESTIONS[type], headline: '', subtitle: '', filters, kpis: [], findings: [], charts: [], table: { title: '', columns: [], rows: [], why: '', build: '' }, footer: next, notes: { header: NOTE.header, filters: NOTE.filters(filters.length), kpis: NOTE.kpis, findings: NOTE.findings, footer: NOTE.next, method: NOTE.method } };
+          const kpiCards = P.kpis.slice(0, A.label === 'General public' ? 3 : 4).map(kp);
+          const head = (h, s) => { pg.headline = h; pg.subtitle = s; };
+          switch (type) {
+            case 'stand': case 'situation': case 'overview': {
+              if (type === 'overview') head(`${P.kpis[0].name} is ${P.kpis[0].value}, ${P.kpis[0].comparison}`, `${P.issue.name} is ${P.issue.value} (${P.issue.comparison}). ${P.source === 'data' ? 'Add the main reason here.' : P.tensionSub}`);
+              else head(P.tension, P.tensionSub);
+              pg.kpis = kpiCards;
+              const tt = 'line';
+              const bt = P.geo ? 'map' : 'bar';
+              pg.charts = [Object.assign(ch(tt), { title: `${P.kpis[0].name} by ${lc(P.time)}, this year vs last year` }), Object.assign(ch(bt), { title: `${P.issue.name} by ${lc(bt === 'map' ? P.geo : d0)}` })];
+              if (A.detail >= 2) pg.charts.push(Object.assign(ch('donut'), { title: `Share of ${lc(P.kpis[0].name)} by ${lc(d1)}` }));
+              break;
+            }
+            case 'why': {
+              pg.layout = 'evidence';
+              head(P.cause, P.causeSub);
+              pg.findings = [P.causeSub, `The gap is concentrated in a few ${plural(d0)}, not spread evenly.`, `It is within our control: ${lc(P.actions[0])} addresses the biggest part.`];
+              pg.charts = P.drivers.slice(0, A.detail >= 2 ? 3 : 2).map(x => Object.assign(ch(x.t), { title: x.title }));
+              pg.charts[0].why += ' Add one annotation on the chart stating the insight.';
+              break;
+            }
+            case 'act': case 'recommend': {
+              pg.layout = 'plan';
+              head(P.fix, P.fixSub);
+              pg.filters = [];
+              pg.notes.filters = NOTE.scenario;
+              pg.kpis = [{ name: 'Investment', value: '$2.4M', comparison: 'over 3 years', isProblem: false }, { name: 'Gain per year', value: '+$1.1M', comparison: 'from year 2', isProblem: true }, { name: 'Pays back in', value: '2.2 yrs', comparison: 'expected scenario', isProblem: false }, { name: 'Risk', value: 'Medium', comparison: 'reserve: $0.4M', isProblem: false }];
+              pg.notes.kpis = NOTE.impact;
+              pg.charts = [Object.assign(ch('scenario'), { title: `${P.kpis[0].name}: forecast with and without the plan` }), Object.assign(ch('waterfall'), { title: 'Where the gain comes from', build: 'Category: action · Y: [Gain] · total bar at the end' })];
+              pg.table = { title: 'Action plan', columns: ['Action', 'Owner', 'Cost', 'Impact', 'When'], rows: P.actions.map((x, j) => [x, ['Operations lead', 'Head of ' + lc(d0), 'Analytics team'][j], ['$1.2M', '$0.8M', '$0.4M'][j], ['+$0.5M/yr', '+$0.4M/yr', '+$0.2M/yr'][j], ['Q1', 'Q2', 'Q3'][j]]), why: 'Every action has an owner, a cost, an impact and a date. Vague actions do not get done.', build: 'Table from an Actions table (or Excel) · conditional formatting on Impact' };
+              pg.footer = ask; pg.notes.footer = NOTE.ask;
+              break;
+            }
+            case 'breakdown': {
+              pg.layout = 'breakdown';
+              head(`${P.issue.name} varies most by ${lc(d0)}`, P.causeSub);
+              const mt = P.geo ? 'map' : 'matrix';
+              pg.charts = [Object.assign(ch(mt), { title: mt === 'map' ? `${P.issue.name} by ${lc(P.geo)}` : `${P.issue.name} by ${lc(d0)} × ${lc(d1)}` }), Object.assign(ch('bar'), { title: `${uc(plural(d0))} ranked by ${lc(P.issue.name)}` }), Object.assign(ch('scatter'), { title: `${P.kpis[0].name} vs ${lc(P.issue.name)}, by ${lc(d0)}` })];
+              break;
+            }
+            case 'exceptions': {
+              pg.layout = 'exceptions';
+              head(`These ${plural(d0)} need attention this month`, `Each one is below target on ${lc(P.issue.name)}. Owners and next steps are listed.`);
+              pg.charts = [Object.assign(ch('bullet'), { title: `${P.issue.name} vs target, by ${lc(d0)}` })];
+              pg.table = { title: 'Exceptions', columns: [uc(d0), P.issue.name, 'vs target', 'Trend', 'Owner'], rows: ['A', 'B', 'C', 'D', 'E', 'F'].map((x, j) => [uc(d0) + ' ' + x, P.issue.value, ['−12%', '−9%', '−7%', '−5%', '−4%', '−2%'][j], ['↓', '↓', '→', '↓', '→', '↑'][j], 'Name']), why: 'A table is for detail, so it comes last. Sort by the gap to target and use conditional formatting so problems stand out; add an owner so every problem has a name next to it.', build: `Table · Rows: ${d0} · [${P.issue.name}], [vs Target %] · icons for trend` };
+              break;
+            }
+            case 'options': {
+              pg.layout = 'options';
+              head('Three options, compared on cost, impact and risk', 'Each option answers the problem in a different way.');
+              pg.table = { title: 'Options compared', columns: ['Option', 'Cost', 'Impact', 'Risk', 'Time to result'], rows: P.actions.map((x, j) => ['Option ' + 'ABC'[j] + ': ' + x, ['$1.2M', '$0.8M', '$0.4M'][j], ['High', 'Medium', 'Low'][j], ['Medium', 'Low', 'Low'][j], ['9 months', '6 months', '3 months'][j]]), why: 'Compare options on the same criteria, side by side, so the audience can choose without you in the room.', build: 'Table or matrix from an Options table' };
+              pg.charts = [Object.assign(ch('bar'), { title: 'Expected gain per option', build: 'Y: option · X: [Expected gain] · highlight the recommended option' }), Object.assign(ch('scatter'), { title: 'Cost vs impact, by option', why: 'A cost-vs-impact scatter shows the trade-off at a glance: top-left is cheap and effective.', build: 'X: [Cost] · Y: [Impact] · size: [Risk]' })];
+              break;
+            }
+            case 'onepage': {
+              pg.layout = 'onepage';
+              head(P.tension, P.tensionSub);
+              pg.kpis = P.kpis.slice(0, 4).map(kp);
+              pg.charts = [Object.assign(ch('line'), { title: `${P.kpis[0].name} by ${lc(P.time)}, this year vs last year` }), Object.assign(ch(P.drivers[0].t), { title: P.drivers[0].title })];
+              pg.findings = P.actions.slice();
+              pg.notes.findings = NOTE.reco;
+              pg.footer = ask; pg.notes.footer = NOTE.ask;
+              break;
+            }
+          }
+          return pg;
+        });
+
+        // ---- data storytelling: each page plays a part in a three-act story, with a presenter script
+        const k0 = P.kpis[0], iss = P.issue;
+        const kv = k => `${k.name.toLowerCase()} is ${k.value}${k.comparison ? ' (' + k.comparison + ')' : ''}`;
+        const STORY = {
+          stand: () => ({ act: 'Setup', say: `Start with what the audience already believes, then the surprise: ${lc(P.tension)}.`, point: 'Read the headline aloud, then the KPI cards from left to right.', pause: `Stop on the accent card: ${kv(iss)}. Let it land before you explain it.` }),
+          situation: () => ({ act: 'Setup', say: `Set the scene in one breath: ${lc(P.tension)}.`, point: 'The KPI cards, then the trend line.', pause: `The number that creates the need to decide: ${kv(iss)}.` }),
+          overview: () => ({ act: 'Setup', say: `Open with the scorecard: ${kv(k0)}.`, point: 'KPI cards first, then the trend line to show direction.', pause: `The metric to watch: ${kv(iss)}.` }),
+          breakdown: () => ({ act: 'Conflict', say: `Show that the problem is not everywhere: ${lc(iss.name)} varies most by ${lc(P.dims[0])}.`, point: `The large chart, then the ranking: name the worst ${lc(P.dims[0])} out loud.`, pause: `The gap between the best and worst ${plural(P.dims[0])}.` }),
+          why: () => ({ act: 'Conflict', say: `Explain the cause, not the symptoms: ${lc(P.cause)}.`, point: 'Read the three findings, then prove the first one with the main chart.', pause: 'The highlighted outliers: this is the moment the audience understands why.' }),
+          exceptions: () => ({ act: 'Conflict', say: `Make it concrete: these ${plural(P.dims[0])} need action now.`, point: 'The bullet chart for the size of each gap, then the table for who owns it.', pause: 'The top row of the table: the biggest gap and its owner.' }),
+          options: () => ({ act: 'Conflict', say: 'Show you considered alternatives before recommending one.', point: 'The options table row by row, then the cost-vs-impact chart.', pause: 'The option in the top-left of the scatter: low cost, high impact.' }),
+          act: () => ({ act: 'Resolution', say: `Resolve the tension: ${lc(P.fix)}. ${P.fixSub}`, point: 'The impact cards, the forecast range, then the action plan.', pause: 'The gain and the payback: what the audience gets for saying yes.' }),
+          recommend: () => ({ act: 'Resolution', say: `Recommend one path: ${lc(P.fix)}.`, point: 'Impact cards, then the Low / Expected / High switch to show the range.', pause: 'The ask at the bottom of the page.' }),
+          onepage: () => ({ act: 'Whole story', say: `Setup, conflict and resolution on one page: ${lc(P.tension)}, because ${lc(P.cause)}.`, point: 'Headline, KPI cards, the trend, the cause chart, then the recommendation box.', pause: 'The ask: one sentence, then stop talking.' })
+        };
+        pages.forEach((pg, i) => {
+          const st = STORY[types[i]]();
+          const nextT = types[i + 1];
+          st.transition = nextT ? ({
+            why: 'So why is this happening?', breakdown: 'So where exactly is the problem?', exceptions: 'So which ones need action now?',
+            options: 'So what are our options?', act: 'So what should we do about it?', recommend: 'So here is what we recommend.'
+          }[nextT] || 'Let us look closer.') : (st.act === 'Resolution' || st.act === 'Whole story' ? 'End with the ask, then take questions.' : 'Close with the one thing to remember.');
+          pg.story = st;
+        });
+        const arc = {
+          setup: P.tension, conflict: P.cause, resolution: P.fix,
+          elevator: `${P.tension}. The main reason is that ${lc(P.cause)}. ${P.fix}.`,
+          takeaway: goal === 'monitor' ? `Watch ${lc(iss.name)}: it is the number most likely to need action.` : P.fix + '.'
+        };
+
+        const big = goal === 'monitor'
+          ? `A regular view of ${lc(P.subject)} that shows how we are doing, where results differ and what needs attention, with ${lc(P.issue.name)} as the metric to watch.`
+          : `${P.tension}, because ${lc(P.cause)}. ${P.fix}.`;
+        const measures = [];
+        P.kpis.forEach(k => {
+          const base = k.table ? `${k.agg}('${k.table.replace(/'/g, "''")}'[${k.name}])` : `-- your calculation for ${k.name}`;
+          measures.push({ name: k.name, dax: base, purpose: 'Base measure' });
+          measures.push({ name: k.name + ' LY', dax: `CALCULATE([${k.name}], SAMEPERIODLASTYEAR('Date'[Date]))`, purpose: 'Same period last year' });
+          measures.push({ name: k.name + ' vs LY %', dax: `DIVIDE([${k.name}] - [${k.name} LY], [${k.name} LY])`, purpose: 'Comparison shown on the KPI card' });
+        });
+        if (types.some(t => t === 'act' || t === 'recommend')) measures.push({ name: 'Selected scenario', dax: 'SELECTEDVALUE(Scenario[Name], "Expected")', purpose: 'Reads the Low / Expected / High switch (a disconnected table)' });
+        measures.push({ name: 'Headline', dax: `"${P.kpis[0].name} is " & FORMAT([${P.kpis[0].name}], "#,0") & ", " & FORMAT([${P.kpis[0].name} vs LY %], "+0%;-0%") & " vs last year"`, purpose: 'Dynamic headline text' });
+
+        const dataNotes = tablesNotes();
+        const tips = Array.from(new Set(audKeys.length ? audKeys : ['manager'])).flatMap(k => AUD[k].tips).slice(0, 6);
+        return {
+          plan: {
+            bigIdea: big, audienceTips: tips, dataNotes, dataModel: dataModelText(), pages, measures, arc,
+            designRules: DEFAULT_RULES
+          },
+          meta: {
+            source: P.source,
+            matchNote: (P.matched ? `Story template: <b>${esc(P.domain)}</b>` : 'No close topic match, so this uses the <b>general</b> story template') +
+              (P.source === 'data' ? ' · KPI values from <b>your data</b>' : P.source === 'columns' ? ' · using <b>your columns</b>' : '') + '. Headlines are examples: rewrite them with your findings.',
+            audience: input.audLabel || A.label, goal: input.goalLabel || goal
+          }
+        };
+      }
+
+      const DEFAULT_RULES = [
+        'Grid: 1280 × 720 canvas, 12 columns, 16 px margins and gaps.',
+        'Type: question 12 px caps · headline 20–24 px bold · KPI values 28–32 px · labels 10–12 px.',
+        'Colour: grey for context, one accent for what matters, red only for real alerts.',
+        'Read order: top-left to bottom-right; the most important number top-left.',
+        'Accessibility: contrast of at least 4.5:1, alt text on visuals, never colour alone.'
+      ];
+
+      function tablesNotes() {
+        return tables.map(t => {
+          const miss = t.columns.filter(c => c.missing > 0);
+          const parts = [`${t.name}: ${t.rows.toLocaleString()} rows, ${t.columns.length} columns`];
+          if (t.dateCol) { const c = t.columns.find(x => x.name === t.dateCol); parts.push(`dates ${c.from} to ${c.to}`); }
+          if (miss.length) parts.push(`${miss.length} column${miss.length > 1 ? 's have' : ' has'} blanks (${miss.slice(0, 3).map(c => c.name).join(', ')}${miss.length > 3 ? '…' : ''})`);
+          return parts.join(' · ');
+        });
+      }
+      function dataModelText() {
+        if (!tables.length) return '';
+        const rel = relationships();
+        const facts = tables.filter(t => t.columns.filter(c => c.type === 'number' && !c.isId).length >= 2).map(t => t.name);
+        let s = facts.length ? `Fact table${facts.length > 1 ? 's' : ''}: ${facts.join(', ')}. ` : '';
+        if (rel.length) s += 'Likely relationships: ' + rel.map(r => `${r.one} (1) → ${r.many} (*) on ${r.column}`).join('; ') + '. ';
+        s += 'Add a marked Date table and connect it to every date column you report on.';
+        return s;
+      }
+
+      // ======================================================================
+      //  RENDER: one plan -> sketched wireframes + presenter script
+      // ======================================================================
+      function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+      const hash = s => { let h = 2166136261; for (const ch of String(s)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+
+      function sketch(type, r) {
+        const S = (vb, inner, keep) => `<svg class="wf-svg" viewBox="${vb}" preserveAspectRatio="${keep ? 'xMidYMid meet' : 'none'}" aria-hidden="true">${inner}</svg>`;
+        const pts = n => Array.from({ length: n }, (_, i) => 15 + r() * 25 + i * (30 / n));
+        switch (type) {
+          case 'line': case 'area': case 'scenario': {
+            const ys = pts(12).map(v => 85 - v);
+            const xs = ys.map((_, i) => 4 + i * (192 / 11));
+            const d = xs.map((x, i) => (i ? 'L' : 'M') + x.toFixed(1) + ' ' + ys[i].toFixed(1)).join(' ');
+            const ly = xs.map((x, i) => (i ? 'L' : 'M') + x.toFixed(1) + ' ' + (ys[i] + 10 + r() * 6).toFixed(1)).join(' ');
+            if (type === 'scenario') {
+              const x0 = xs[7], y0 = ys[7];
+              const main = xs.slice(0, 8).map((x, i) => (i ? 'L' : 'M') + x.toFixed(1) + ' ' + ys[i].toFixed(1)).join(' ');
+              return S('0 0 200 100', `<line x1="0" y1="98" x2="200" y2="98" stroke="currentColor" opacity=".5"/><path d="M${x0} ${y0} L196 ${y0 - 34} L196 ${y0 + 6} Z" fill="currentColor" opacity=".16"/><path d="M${x0} ${y0} L196 ${y0 - 16}" class="hl-s" stroke-width="2.5" stroke-dasharray="5 3" fill="none" vector-effect="non-scaling-stroke"/><path d="${main}" fill="none" stroke="currentColor" stroke-width="2.5" vector-effect="non-scaling-stroke"/><line x1="${x0}" y1="5" x2="${x0}" y2="98" stroke="currentColor" stroke-dasharray="2 3" opacity=".6" vector-effect="non-scaling-stroke"/>`);
+            }
+            const extra = type === 'area' ? `<path d="${d} L196 98 L4 98 Z" fill="currentColor" opacity=".18"/>` : '';
+            return S('0 0 200 100', `<line x1="0" y1="98" x2="200" y2="98" stroke="currentColor" opacity=".5"/>${extra}<path d="${ly}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" opacity=".55" vector-effect="non-scaling-stroke"/><path d="${d}" fill="none" stroke="currentColor" stroke-width="2.5" vector-effect="non-scaling-stroke"/><circle cx="${xs[11]}" cy="${ys[11]}" r="4" class="hl"/>`);
+          }
+          case 'bar': {
+            let g = '';
+            [92, 78, 66, 55, 41, 24].map(v => v + r() * 6).forEach((v, i) => { g += `<rect x="0" y="${i * 16.5 + 2}" width="${v * 2}" height="11" rx="1" ${i === 5 ? 'class="hl"' : 'fill="currentColor"'}/>`; });
+            return S('0 0 200 100', g);
+          }
+          case 'column': {
+            let g = '';
+            const hs = Array.from({ length: 12 }, (_, i) => 25 + 55 * Math.sin((i + 2) / 4) ** 2 + r() * 12);
+            const mx = hs.indexOf(Math.max(...hs));
+            hs.forEach((h, i) => { g += `<rect x="${i * 16.5 + 2}" y="${98 - h}" width="12" height="${h}" rx="1" ${i === mx ? 'class="hl"' : 'fill="currentColor"'}/>`; });
+            return S('0 0 200 100', g + '<line x1="0" y1="98.5" x2="200" y2="98.5" stroke="currentColor"/>');
+          }
+          case 'waterfall': {
+            let g = `<rect x="4" y="${98 - 91}" width="28" height="91" fill="currentColor"/>`;
+            [[70, 55], [55, 44], [44, 37]].forEach(([a, b], i) => { g += `<rect x="${42 + i * 38}" y="${98 - a * 1.3}" width="28" height="${(a - b) * 1.3}" ${i === 0 ? 'class="hl"' : 'fill="currentColor" opacity=".55"'}/>`; });
+            g += `<rect x="156" y="${98 - 37 * 1.3}" width="28" height="${37 * 1.3}" fill="currentColor"/>`;
+            return S('0 0 200 100', g + '<line x1="0" y1="98.5" x2="200" y2="98.5" stroke="currentColor"/>');
+          }
+          case 'donut': {
+            const c = 2 * Math.PI * 30;
+            return S('0 0 100 100', `<circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="14" opacity=".35"/><circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="14" stroke-dasharray="${c * .32} ${c}" transform="rotate(-90 50 50)"/><circle cx="50" cy="50" r="30" fill="none" class="hl-s" stroke-width="14" stroke-dasharray="${c * .22} ${c}" stroke-dashoffset="${-c * .32}" transform="rotate(-90 50 50)"/><text x="50" y="55" text-anchor="middle" font-size="13" fill="currentColor" font-weight="700">50%</text>`, true);
+          }
+          case 'scatter': {
+            let g = '<line x1="8" y1="92" x2="196" y2="92" stroke="currentColor" opacity=".5"/><line x1="8" y1="4" x2="8" y2="92" stroke="currentColor" opacity=".5"/>';
+            for (let i = 0; i < 22; i++) { const x = 15 + r() * 170, y = 85 - (x - 15) * .4 - r() * 30; g += `<circle cx="${x.toFixed(1)}" cy="${Math.max(8, y).toFixed(1)}" r="3.2" fill="currentColor"/>`; }
+            g += '<circle cx="160" cy="80" r="4.5" class="hl"/><circle cx="175" cy="72" r="4.5" class="hl"/><path d="M12 86 L192 16" stroke="currentColor" stroke-dasharray="4 3" opacity=".6"/>';
+            return S('0 0 200 100', g, true);
+          }
+          case 'map': {
+            const shapes = ['M20 20 L70 12 L80 40 L45 55 L18 45Z', 'M70 12 L130 15 L125 45 L80 40Z', 'M130 15 L180 25 L175 60 L125 45Z', 'M18 45 L45 55 L50 88 L22 85Z', 'M45 55 L80 40 L125 45 L115 85 L50 88Z', 'M125 45 L175 60 L165 90 L115 85Z'];
+            const op = [.25, .5, .35, .7, .4, .55];
+            return S('0 0 200 100', shapes.map((d, i) => `<path d="${d}" ${i === 3 ? 'class="hl"' : `fill="currentColor" fill-opacity="${op[i]}"`} style="stroke:var(--wf-el)" stroke-width="1.5"/>`).join(''), true);
+          }
+          case 'matrix': case 'table': {
+            let g = '';
+            for (let rI = 0; rI < 6; rI++) for (let cI = 0; cI < 6; cI++) {
+              const v = r();
+              const hot = type === 'matrix' && ((rI === 2 && cI === 4) || (rI === 4 && cI === 1));
+              g += `<rect x="${cI * 33 + 1}" y="${rI * 16 + 2}" width="31" height="13" ${hot ? 'class="hl"' : `fill="currentColor" fill-opacity="${type === 'matrix' ? (.1 + v * .5).toFixed(2) : (rI === 0 ? .45 : .12)}"`}/>`;
+            }
+            return S('0 0 200 100', g);
+          }
+          case 'gantt': {
+            let g = '';
+            [[5, 60], [40, 70], [70, 50], [95, 80], [120, 60], [150, 45]].forEach(([x, w], i) => { g += `<rect x="${x}" y="${i * 16 + 3}" width="${w}" height="10" rx="2" ${i === 2 ? 'class="hl"' : 'fill="currentColor"'}/>`; });
+            return S('0 0 200 100', g + '<line x1="110" y1="0" x2="110" y2="100" stroke="currentColor" stroke-dasharray="3 3"/>');
+          }
+          case 'decomp': {
+            const box = (x, y, hl) => `<rect x="${x}" y="${y}" width="40" height="14" rx="2" ${hl ? 'class="hl"' : 'fill="currentColor"'}/>`;
+            let g = box(4, 43) + '<path d="M44 50 L72 20 M44 50 L72 50 M44 50 L72 80 M112 50 L142 35 M112 50 L142 65" stroke="currentColor" fill="none"/>';
+            g += box(72, 13) + box(72, 43, true) + box(72, 73) + box(142, 28) + box(142, 58, true);
+            return S('0 0 200 100', g, true);
+          }
+          case 'funnel': {
+            let g = '';
+            [180, 130, 82, 40].forEach((w, i) => { g += `<path d="M${100 - w / 2} ${i * 24 + 2} L${100 + w / 2} ${i * 24 + 2} L${100 + (w - 22) / 2} ${i * 24 + 22} L${100 - (w - 22) / 2} ${i * 24 + 22}Z" ${i === 2 ? 'class="hl"' : 'fill="currentColor"'}/>`; });
+            return S('0 0 200 100', g, true);
+          }
+          case 'bullet': {
+            let g = '';
+            for (let i = 0; i < 6; i++) {
+              const a = 40 + r() * 140, t = 120 + r() * 50;
+              g += `<rect x="0" y="${i * 16.5 + 2}" width="196" height="11" fill="currentColor" opacity=".18"/><rect x="0" y="${i * 16.5 + 5}" width="${a}" height="5" ${a < t - 30 ? 'class="hl"' : 'fill="currentColor"'}/><line x1="${t}" y1="${i * 16.5 + 1}" x2="${t}" y2="${i * 16.5 + 14}" stroke="currentColor" stroke-width="2"/>`;
+            }
+            return S('0 0 200 100', g);
+          }
+          default: return S('0 0 200 100', '<rect x="0" y="0" width="200" height="100" fill="currentColor" opacity=".12"/>');
+        }
+      }
+
+      const CHART_NAME = { line: 'Line chart', area: 'Area chart', column: 'Column chart', bar: 'Bar chart', waterfall: 'Waterfall chart', donut: 'Donut chart', scatter: 'Scatter chart', map: 'Filled map', matrix: 'Matrix (heatmap)', table: 'Table', gantt: 'Gantt chart', decomp: 'Decomposition tree', funnel: 'Funnel chart', scenario: 'Forecast with range', bullet: 'Bullet chart' };
+
+      // turn one plan page into positioned elements on a 12 × 12 grid
+      function layoutPage(pg, flip) {
+        const els = [];
+        const add = (kind, c, cs, r, rs, o) => els.push(Object.assign({ kind, c, cs, r, rs }, o || {}));
+        const L = (c, cs) => flip ? 14 - c - cs : c;
+        const N = pg.notes;
+        const ask = pg.layout === 'plan' || pg.layout === 'onepage';
+        add('header', 1, pg.filters.length || pg.layout === 'plan' ? 9 : 12, 1, 2, { q: pg.question, h: pg.headline, s: pg.subtitle, label: 'Question, answer and key numbers', note: N.header || NOTE.header, spec: 'Text boxes · a dynamic headline measure keeps the numbers current' });
+        if (pg.filters.length) add('slicers', 10, 3, 1, 2, { items: pg.filters, label: 'Filters', note: N.filters || NOTE.filters(pg.filters.length), spec: 'Slicers: ' + pg.filters.join(', ') + ' · sync across pages' });
+        else if (pg.layout === 'plan') add('slicers', 10, 3, 1, 2, { items: ['Low', 'Expected', 'High'], seg: true, label: 'Scenario switch', note: N.filters || NOTE.scenario, spec: 'Disconnected Scenario table + SELECTEDVALUE in the forecast measures' });
+
+        const kpiRow = () => {
+          const ks = pg.kpis.slice(0, 4);
+          if (!ks.length) return false;
+          const span = ks.length === 3 ? 4 : ks.length === 2 ? 6 : ks.length === 1 ? 12 : 3;
+          ks.forEach((k, i) => add('kpi', 1 + i * span, span, 3, 2, Object.assign({ k }, i === 0 ? { label: 'KPI cards', note: N.kpis || NOTE.kpis, spec: 'Card visuals: ' + ks.map(x => '[' + x.name + ']').join(', ') + ' · with a comparison line' } : {})));
+          return true;
+        };
+        const chart = (i, c, cs, r, rs, role) => {
+          const x = pg.charts[i];
+          if (!x) return;
+          add('chart', c, cs, r, rs, { t: x.chartType, title: x.title, label: (CHART_NAME[x.chartType] || 'Chart') + (role ? ` (${role})` : ''), note: x.why, spec: x.build });
+        };
+        const table = (c, cs, r, rs) => {
+          if (!pg.table.columns.length) return;
+          add('table', c, cs, r, rs, { head: pg.table.columns, rows: pg.table.rows, label: pg.table.title || 'Table', note: pg.table.why, spec: pg.table.build });
+        };
+        const nCharts = pg.charts.length;
+
+        switch (pg.layout) {
+          case 'evidence': {
+            pg.findings.slice(0, 3).forEach((t, i, a) => add('finding', 1 + i * (12 / a.length), 12 / a.length, 3, 2, Object.assign({ n: i + 1, text: t }, i === 0 ? { label: 'Findings', note: N.findings || NOTE.findings, spec: 'Text boxes or cards with short sentences' } : {})));
+            const top = pg.findings.length ? 5 : 3, h = 12 - top;
+            chart(0, L(1, 7), 7, top, h, 'main evidence');
+            chart(1, L(8, 5), 5, top, nCharts > 2 ? Math.ceil(h / 2) + 0 : h);
+            chart(2, L(8, 5), 5, top + Math.ceil(h / 2), h - Math.ceil(h / 2));
+            break;
+          }
+          case 'plan': {
+            const has = kpiRow();
+            const top = has ? 5 : 3;
+            const hasT = pg.table.columns.length > 0;
+            const h = hasT ? 4 : 12 - top;
+            chart(0, L(1, 7), 7, top, h);
+            chart(1, L(8, 5), 5, top, h);
+            if (hasT) table(1, 12, top + h, 12 - top - h);
+            break;
+          }
+          case 'breakdown': {
+            chart(0, L(1, 7), 7, 3, 9, 'main');
+            chart(1, L(8, 5), 5, 3, nCharts > 2 ? 5 : 9);
+            chart(2, L(8, 5), 5, 8, 4);
+            break;
+          }
+          case 'exceptions': {
+            if (nCharts) { chart(0, L(1, 5), 5, 3, 9); table(L(6, 7), 7, 3, 9); }
+            else table(1, 12, 3, 9);
+            break;
+          }
+          case 'options': {
+            const hasT = pg.table.columns.length > 0;
+            if (hasT) table(1, 12, 3, 4);
+            const top = hasT ? 7 : 3;
+            chart(0, L(1, 6), 6, top, 12 - top);
+            chart(1, L(7, 6), 6, top, 12 - top);
+            break;
+          }
+          case 'onepage': {
+            const top = kpiRow() ? 5 : 3, h = 12 - top;
+            chart(0, L(1, 6), 6, top, h, 'trend');
+            const reco = pg.findings.length;
+            chart(1, L(7, 6), 6, top, reco ? Math.ceil(h / 2) : h, 'the cause');
+            if (reco) add('text', L(7, 6), 6, top + Math.ceil(h / 2), h - Math.ceil(h / 2), { html: '<b>What we recommend</b><br>' + pg.findings.map((x, i) => (i + 1) + '. ' + esc(x)).join('<br>'), label: 'Recommendation', note: N.findings || NOTE.reco, spec: 'Text box or table' });
+            break;
+          }
+          default: { // overview
+            const top = kpiRow() ? 5 : 3, h = 12 - top;
+            chart(0, L(1, 7), 7, top, h, 'trend');
+            chart(1, L(8, 5), 5, top, nCharts > 2 ? Math.ceil(h / 2) : h, 'breakdown');
+            chart(2, L(8, 5), 5, top + Math.ceil(h / 2), h - Math.ceil(h / 2));
+          }
+        }
+        // footer row (row 12 is shared with the last content row via overlap-free placement below)
+        return { els, footer: { text: pg.footer, ask, note: N.footer || (ask ? NOTE.ask : NOTE.next), method: N.method || NOTE.method } };
+      }
+
+      function elHTML(e, num, r) {
+        const badge = num ? `<span class="wf-n" aria-hidden="true">${num}</span>` : '';
+        const pos = `grid-column:${e.c} / span ${e.cs};grid-row:${e.r} / span ${e.rs}`;
+        let cls = 'wf-el', inner = '';
+        switch (e.kind) {
+          case 'header':
+            cls += ' plain';
+            inner = `<div class="wf-q">${esc(e.q)}</div><div class="wf-h">${esc(e.h)}</div><div class="wf-s">${esc(e.s)}</div>`; break;
+          case 'slicers':
+            inner = `<div class="wf-pills ${e.seg ? 'seg' : ''}">` + e.items.map((x, i) => `<span class="wf-pill ${e.seg && i === 1 ? 'on' : ''}">${esc(x)}</span>`).join('') + '</div>'; break;
+          case 'kpi':
+            if (e.k.isProblem) cls += ' bad';
+            inner = `<div class="wf-k-n">${esc(e.k.name)}</div><div class="wf-k-v">${esc(e.k.value)}</div><div class="wf-k-c">${esc(e.k.comparison)}</div>`; break;
+          case 'finding':
+            inner = `<div class="wf-t">Finding ${e.n}</div><div class="wf-txt">${esc(e.text)}</div>`; break;
+          case 'chart':
+            inner = `<div class="wf-t">${esc(e.title)}</div>` + sketch(e.t, r); break;
+          case 'table': {
+            const hl = Math.min(2, e.head.length - 1);
+            inner = `<table class="wf-tbl"><thead><tr>${e.head.map(x => `<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${e.rows.map(row => `<tr>${e.head.map((_, i) => `<td${i === hl ? ' class="hl"' : ''}>${esc(row[i] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`; break;
+          }
+          case 'ask':
+            cls += ' ask';
+            inner = `<div class="wf-txt">${esc(e.text)}</div>`; break;
+          case 'note':
+            cls += ' plain';
+            inner = `<div class="wf-txt">${e.html}</div>`; break;
+          default:
+            inner = `<div class="wf-txt">${e.html}</div>`;
+        }
+        return `<div class="${cls}" style="${pos}">${badge}${inner}</div>`;
+      }
+
+      // content uses rows 1-11; row 12 is the footer
+      function placePage(pg, flip) {
+        const { els, footer } = layoutPage(pg, flip);
+        els.forEach(e => { if (e.r + e.rs - 1 > 11) e.rs = Math.max(1, 12 - e.r); });
+        if (footer.ask) els.push({ kind: 'ask', c: 1, cs: 8, r: 12, rs: 1, text: footer.text, label: 'The ask', note: footer.note, spec: 'Text box, accent background' });
+        else els.push({ kind: 'note', c: 1, cs: 8, r: 12, rs: 1, html: esc(footer.text || 'Next →'), label: 'Next', note: footer.note, spec: 'Button with a page navigation action' });
+        els.push({ kind: 'note', c: 9, cs: 4, r: 12, rs: 1, html: '<b>How we counted:</b> definitions, sources, last refresh.', label: 'How we counted', note: footer.method, spec: 'Text box, small font · show the last refresh date' });
+        return els;
+      }
+
+      let state = null;   // { plan, meta, input, flip, style }
+
+      const ACT_CLASS = { 'Setup': 'setup', 'Conflict': 'conflict', 'Resolution': 'resolution', 'Whole story': 'resolution' };
+      const ACT_Y = { 'Setup': 118, 'Conflict': 38, 'Resolution': 96, 'Whole story': 70 };
+
+      // the classic story arc: tension rises (setup -> conflict) and is released (resolution)
+      function arcSVG(pgs) {
+        const n = pgs.length;
+        const pts = pgs.map((pg, i) => ({ x: n === 1 ? 300 : 70 + i * (460 / (n - 1)), y: ACT_Y[pg.story.act] || 80, i }));
+        const all = [{ x: 14, y: 150 }].concat(pts, [{ x: 586, y: 140 }]);
+        let d = `M${all[0].x} ${all[0].y}`;
+        for (let i = 1; i < all.length; i++) { const a = all[i - 1], b = all[i], dx = (b.x - a.x) / 2; d += ` C${a.x + dx} ${a.y} ${b.x - dx} ${b.y} ${b.x} ${b.y}`; }
+        return `<svg class="arc" viewBox="0 0 600 190" role="img" aria-label="Story arc: tension rises through the setup and conflict, and is released in the resolution">
+          <line x1="14" y1="160" x2="586" y2="160" stroke="currentColor" opacity=".25"/>
+          <text x="14" y="182" class="arc-l">Setup</text><text x="300" y="182" text-anchor="middle" class="arc-l">Conflict</text><text x="586" y="182" text-anchor="end" class="arc-l">Resolution</text>
+          <text x="14" y="16" class="arc-l">Tension ↑</text>
+          <path d="${d}" fill="none" stroke="currentColor" stroke-width="2.5" opacity=".55"/>
+          ${pts.map(p => `<g><line x1="${p.x}" y1="${p.y + 12}" x2="${p.x}" y2="160" stroke="currentColor" stroke-dasharray="3 3" opacity=".35"/><circle cx="${p.x}" cy="${p.y}" r="12" class="arc-dot"/><text x="${p.x}" y="${p.y + 4.5}" text-anchor="middle" class="arc-n">${p.i + 1}</text></g>`).join('')}
+        </svg>`;
+      }
+
+      function storyCard(plan, pgs) {
+        const a = plan.arc;
+        if (!a) return '';
+        return `<div class="card story"><div class="kicker">Data storytelling</div><h2>Your data story</h2>
+          <div class="story-grid">
+            <div>${arcSVG(pgs)}</div>
+            <div class="acts">
+              <div class="act-row"><span class="act setup">1 · Setup</span><p><b>Context.</b> ${esc(a.setup)}.</p></div>
+              <div class="act-row"><span class="act conflict">2 · Conflict</span><p><b>Tension: why it matters.</b> ${esc(a.conflict)}.</p></div>
+              <div class="act-row"><span class="act resolution">3 · Resolution</span><p><b>What to do.</b> ${esc(a.resolution)}.</p></div>
+            </div>
+          </div>
+          <div class="story-two">
+            <div><div class="kicker">The 30-second version</div><p>“${esc(a.elevator)}”</p></div>
+            <div><div class="kicker">If they remember one thing</div><p>${esc(a.takeaway)}</p></div>
+          </div>
+          <ul class="tips story-rules">
+            <li><b>Start with a question, not a chart.</b> Every page title is a question; the headline is the answer.</li>
+            <li><b>Build tension before you resolve it.</b> Show the problem clearly before you show the plan.</li>
+            <li><b>One idea per page,</b> one accent colour per chart, and an annotation on the key point.</li>
+            <li><b>End with an ask,</b> not “Questions?”.</li>
+          </ul></div>`;
+      }
+
+      function scriptHTML(pg) {
+        const st = pg.story;
+        if (!st) return '';
+        return `<div class="script"><div class="script-h"><span class="act ${ACT_CLASS[st.act] || 'setup'}">${esc(st.act)}</span><b>Presenter script</b><span class="hint">how to tell this page</span></div>
+          <dl><div><dt>Say</dt><dd>${esc(st.say)}</dd></div><div><dt>Point to</dt><dd>${esc(st.point)}</dd></div><div><dt>Pause on</dt><dd>${esc(st.pause)}</dd></div><div><dt>Then say</dt><dd>“${esc(st.transition)}”</dd></div></dl></div>`;
+      }
+
+      function draw() {
+        const { plan, meta, input, flip } = state;
+        const r = rng(hash(input.topic + plan.bigIdea) + (flip ? 7 : 0));
+        const pages = plan.pages.map(pg => ({ pg, els: placePage(pg, flip) }));
+
+        let html = `<div class="bar"><p class="match">${meta.matchNote}</p>
+          <div class="btns"><div class="seg" role="group" aria-label="Wireframe style"><button type="button" data-style="sketch" aria-pressed="${state.style === 'sketch'}">✎ Sketch</button><button type="button" data-style="clean" aria-pressed="${state.style === 'clean'}">Clean</button></div><button type="button" class="btn" id="flip">↔ Mirror layout</button><button type="button" class="btn" id="copy">Copy brief</button><button type="button" class="btn" id="dl">Download brief (.md)</button><button type="button" class="btn" id="print">Print / save PDF</button></div></div>`;
+
+        html += `<div class="card"><div class="kicker">The big idea</div><p class="bigidea">${esc(plan.bigIdea)}</p>
+          <div class="meta-row"><span>Topic: <b>${esc(input.topic || '(from your data)')}</b></span><span>Audience: <b>${esc(meta.audience)}</b></span><span>Goal: <b>${esc(meta.goal)}</b></span><span>Canvas: <b>1280 × 720, 16:9</b></span></div></div>`;
+
+        html += `<div class="card"><div class="kicker">Story flow</div><h2>${pages.length === 1 ? 'One page, one story' : pages.length + ' pages, one story'}</h2><div class="flow">` +
+          pages.map((p, i) => `<a href="#wf-${i + 1}"><div class="fq">Page ${i + 1} · ${esc(p.pg.question)}</div><div class="fh">${esc(p.pg.headline)}</div></a>`).join('') + `</div></div>`;
+
+        html += storyCard(plan, pages.map(p => p.pg));
+
+        if (plan.dataNotes.length || plan.dataModel) {
+          html += `<div class="card"><div class="kicker">Your data</div><h2>What the data supports</h2>${plan.dataNotes.length ? `<ul class="tips">${plan.dataNotes.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}${plan.dataModel ? `<p class="tips" style="list-style:none;padding:0;margin-top:.6rem"><b>Suggested model:</b> ${esc(plan.dataModel)}</p>` : ''}</div>`;
+        }
+        if (plan.audienceTips.length) html += `<div class="card"><div class="kicker">Writing for your audience</div><ul class="tips">${plan.audienceTips.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
+
+        pages.forEach((p, i) => {
+          let n = 0;
+          const nums = p.els.map(e => e.note ? ++n : 0);
+          html += `<section class="wf-page" id="wf-${i + 1}" aria-label="Wireframe page ${i + 1}">
+            <div class="wf-title"><span class="pg">Page ${i + 1} of ${pages.length}</span><h2>${esc(p.pg.question)}</h2><span class="sample">${meta.source === 'data' ? 'KPIs from your data · headlines are examples' : 'Sample values · replace with your data'}</span></div>
+            <div class="wf-layout">
+              <div class="wf-main"><div class="wf-scroll"><div class="wf-canvas" role="img" aria-label="Wireframe of page ${i + 1}: ${esc(p.pg.headline)}">${p.els.map((e, j) => elHTML(e, nums[j], r)).join('')}</div></div>${scriptHTML(p.pg)}</div>
+              <ol class="wf-notes" aria-label="Why this layout works">${p.els.map((e, j) => e.note ? `<li><span class="num">${nums[j]}</span><div><div class="why"><b>${esc(e.label)}.</b> ${esc(e.note)}</div>${e.spec ? `<div class="spec">${esc(e.spec)}</div>` : ''}</div></li>` : '').join('')}</ol>
+            </div></section>`;
+        });
+
+        html += `<div class="grid2">
+          <div class="card"><div class="kicker">Build list</div><h2>Measures to create</h2><div class="measures">${esc(measuresText(plan.measures))}</div></div>
+          <div class="card"><div class="kicker">Design rules</div><h2>Make it look like one product</h2>
+            <div class="swatches"><span class="sw"><i style="background:#F5F6F8"></i>Background</span><span class="sw"><i style="background:#9AA5B1"></i>Neutral data</span><span class="sw"><i style="background:#F2C811"></i>Accent: the story</span><span class="sw"><i style="background:#1F2937"></i>Text</span></div>
+            <ul class="tips">${(plan.designRules.length ? plan.designRules : DEFAULT_RULES).map(t => `<li>${esc(t)}</li>`).join('')}
+              <li><b>Next:</b> generate a matching background and theme with my <a href="https://ai.studio/apps/92b810e1-ac95-4b34-8132-19ba5858b751" target="_blank" rel="noopener">Power BI Background &amp; Theme Generator ↗</a></li>
+            </ul></div>
+        </div>`;
+
+        const out = $('#out');
+        out.innerHTML = html;
+        out.hidden = false;
+        out.classList.toggle('sketch', state.style === 'sketch');
+        out.querySelectorAll('[data-style]').forEach(b => b.addEventListener('click', () => { state.style = b.dataset.style; draw(); }));
+        $('#flip').addEventListener('click', () => { state.flip = !state.flip; draw(); toast('Layout mirrored'); });
+        $('#copy').addEventListener('click', copyBrief);
+        $('#dl').addEventListener('click', downloadBrief);
+        $('#print').addEventListener('click', () => window.print());
+      }
+
+      const measuresText = ms => (ms && ms.length ? ms : []).map(m => {
+        const dax = m.dax.replace(new RegExp('^\\s*\\[?' + m.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\]?\\s*=\\s*'), '');
+        return `${m.name} =\n    ${dax}${m.purpose ? '\n    -- ' + m.purpose : ''}`;
+      }).join('\n\n') || 'No measures suggested.';
+
+      function brief() {
+        const { plan, meta, input, flip } = state;
+        let md = `# Report wireframe: ${input.topic || '(from data)'}\n\n**Big idea:** ${plan.bigIdea}\n\n- Audience: ${meta.audience}\n- Goal: ${meta.goal}\n- Canvas: 1280 × 720 (16:9)\n\n## Story flow\n`;
+        plan.pages.forEach((p, i) => { md += `${i + 1}. **${p.question}** ${p.headline}${p.story ? ` _(${p.story.act})_` : ''}\n`; });
+        if (plan.arc) md += `\n## Data story\n\n- **Setup:** ${plan.arc.setup}.\n- **Conflict:** ${plan.arc.conflict}.\n- **Resolution:** ${plan.arc.resolution}.\n\n**30-second version:** “${plan.arc.elevator}”\n\n**If they remember one thing:** ${plan.arc.takeaway}\n`;
+        if (plan.dataNotes.length || plan.dataModel) md += `\n## Data\n${plan.dataNotes.map(t => `- ${t}`).join('\n')}\n${plan.dataModel ? `\n**Suggested model:** ${plan.dataModel}\n` : ''}`;
+        plan.pages.forEach((p, i) => {
+          md += `\n## Page ${i + 1}: ${p.question}\n\n**Headline:** ${p.headline}\n\n**Subtitle:** ${p.subtitle}\n\n| # | Element | Why | Build |\n|---|---|---|---|\n`;
+          let n = 0;
+          placePage(p, flip).forEach(e => { if (e.note) { n++; md += `| ${n} | ${e.label} | ${e.note.replace(/\|/g, '/')} | ${(e.spec || '').replace(/\|/g, '/')} |\n`; } });
+          if (p.story) md += `\n**Presenter script (${p.story.act})**\n- Say: ${p.story.say}\n- Point to: ${p.story.point}\n- Pause on: ${p.story.pause}\n- Then say: “${p.story.transition}”\n`;
+        });
+        md += `\n## Measures\n\n\`\`\`DAX\n${measuresText(plan.measures)}\n\`\`\`\n`;
+        if (plan.audienceTips.length) md += `\n## Tips for this audience\n${plan.audienceTips.map(t => `- ${t}`).join('\n')}\n`;
+        md += `\n## Design rules\n${(plan.designRules.length ? plan.designRules : DEFAULT_RULES).map(t => `- ${t}`).join('\n')}\n`;
+        md += `\n_Sample headlines and values are examples: replace them with your findings._\n\nMade with the Report Wireframe Generator by Rashid Tobrazune Awudu Seidu.\n`;
+        return md;
+      }
+      async function copyBrief() {
+        const text = brief();
+        try { await navigator.clipboard.writeText(text); toast('Brief copied'); }
+        catch (e) {
+          const ta = document.createElement('textarea'); ta.value = text; document.body.append(ta); ta.select();
+          try { document.execCommand('copy'); toast('Brief copied'); } catch (e2) { toast('Copy failed: use Download instead'); }
+          ta.remove();
+        }
+      }
+      function downloadBrief() {
+        const blob = new Blob([brief()], { type: 'text/markdown' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'wireframe-' + ((state.input.topic || 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'report') + '.md';
+        document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }
+
+      // ======================================================================
+      //  GENERATE (only when the button is pressed)
+      // ======================================================================
+      function setStatus(msg, busy, bad) {
+        const s = $('#status');
+        s.className = 'status' + (bad ? ' bad' : '');
+        s.innerHTML = (busy ? '<span class="spin" aria-hidden="true"></span>' : '') + `<span>${esc(msg)}</span>`;
+      }
+
+      function readInput() {
+        const audChips = picked('aud'), goalChips = picked('goal'), pageChip = picked('pages')[0];
+        const audOther = $('#audOther').value.trim(), goalOther = $('#goalOther').value.trim();
+        const typedPages = parseInt($('#pagesOther').value, 10);
+        const pages = isFinite(typedPages) ? Math.max(1, Math.min(10, typedPages)) : pageChip ? (pageChip.v === 'auto' ? 'auto' : parseInt(pageChip.v, 10)) : 3;
+        const audLabels = audChips.map(a => a.label).concat(audOther ? [audOther] : []);
+        const goalLabels = goalChips.map(g => g.label).concat(goalOther ? [goalOther] : []);
+        return {
+          topic: $('#topic').value.trim(), audChips, goalChips, audOther, goalOther, audLabels, goalLabels, pages,
+          audLabel: audLabels.join(', '), goalLabel: goalLabels.join(', '),
+          fields: $('#fields').value.trim()
+        };
+      }
+
+      const genBtn = $('#genBtn');
+      $('#form').addEventListener('submit', e => {
+        e.preventDefault();
+        const input = readInput();
+        if (!input.topic && !tables.length) { setStatus('Type a topic or upload at least one file first.', false, true); $('#topic').focus(); return; }
+        if (!input.audLabels.length) input.audLabels = ['Managers'];
+        if (!input.goalLabels.length) input.goalLabels = ['Explain a problem and fix it'];
+        if (input.pages !== 'auto' && input.pages > 6) toast('The generator makes up to 6 pages');
+        genBtn.disabled = true;
+        try {
+          const result = quickPlan(input);
+          state = { plan: result.plan, meta: result.meta, input, flip: false, style: state ? state.style : 'sketch' };
+          draw();
+          setStatus(`Done: ${state.plan.pages.length} page${state.plan.pages.length > 1 ? 's' : ''} below.`);
+          $('#out').scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+        } catch (err) {
+          setStatus(err.message || 'Something went wrong.', false, true);
+        } finally {
+          genBtn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>
